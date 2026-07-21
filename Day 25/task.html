@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦈 AI Shark Tank Simulator</title>
+  <!-- Font Awesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0e14;
+      color: #eef2f6;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1300px;
+      width: 100%;
+    }
+    /* header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid #2a313c;
+      padding-bottom: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo i { color: #facc15; }
+    .logo span { background: linear-gradient(135deg, #facc15, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .badge { background: #1e293b; padding: 0.4rem 1rem; border-radius: 40px; font-size: 0.8rem; font-weight: 600; color: #94a3b8; border: 1px solid #334155; }
+    /* cards */
+    .card {
+      background: #141a23;
+      border-radius: 24px;
+      padding: 1.5rem 1.8rem;
+      border: 1px solid #28303d;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+      transition: all 0.2s;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.2rem;
+      color: #cbd5e1;
+    }
+    .card-title i { color: #facc15; width: 24px; }
+    /* form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem 1.8rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group textarea {
+      background: #1e2632;
+      border: 1px solid #2f3848;
+      border-radius: 14px;
+      padding: 0.7rem 1rem;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #facc15; box-shadow: 0 0 0 3px rgba(250,204,21,0.15); }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .btn {
+      background: #facc15;
+      border: none;
+      color: #0b0e14;
+      font-weight: 700;
+      padding: 0.8rem 1.8rem;
+      border-radius: 60px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+      border: 1px solid #facc15;
+    }
+    .btn:hover { background: #fbbf24; transform: scale(1.02); }
+    .btn-secondary { background: transparent; border: 1px solid #334155; color: #e2e8f0; }
+    .btn-secondary:hover { background: #1e293b; border-color: #facc15; color: #facc15; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.2rem; }
+    /* judges row */
+    .judges-row {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .judge-card {
+      background: #10171f;
+      border-radius: 20px;
+      padding: 1rem 1rem 0.8rem;
+      border: 1px solid #28303d;
+      text-align: center;
+      transition: 0.2s;
+      cursor: default;
+    }
+    .judge-card.active { border-color: #facc15; box-shadow: 0 0 15px rgba(250,204,21,0.1); }
+    .judge-avatar { font-size: 2.8rem; margin-bottom: 0.2rem; }
+    .judge-name { font-weight: 700; font-size: 1rem; }
+    .judge-focus { font-size: 0.7rem; color: #94a3b8; background: #1e293b; padding: 0.2rem 0.6rem; border-radius: 40px; display: inline-block; margin-top: 4px; }
+    /* pitch & q&a */
+    .pitch-area { margin: 1.8rem 0; }
+    .question-bubble {
+      background: #1a232f;
+      border-radius: 18px;
+      padding: 1rem 1.4rem;
+      margin: 0.8rem 0;
+      border-left: 4px solid #facc15;
+    }
+    .question-bubble .q { color: #facc15; font-weight: 700; }
+    .question-bubble .judge-tag { font-size: 0.75rem; background: #2d3748; padding: 0.2rem 0.8rem; border-radius: 30px; margin-left: 10px; }
+    .answer-input { display: flex; gap: 10px; margin-top: 0.6rem; flex-wrap: wrap; }
+    .answer-input input { flex:1; background: #1e2632; border:1px solid #2f3848; border-radius: 40px; padding:0.6rem 1.2rem; color:white; min-width:150px; }
+    .answer-input input:focus { border-color:#facc15; outline:none; }
+    /* score */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      gap: 0.8rem;
+      margin: 1.5rem 0;
+    }
+    .score-item { background: #0f161f; padding: 0.7rem; border-radius: 16px; text-align: center; border:1px solid #26303d; }
+    .score-item .label { font-size:0.7rem; color:#94a3b8; }
+    .score-item .value { font-size:1.6rem; font-weight:800; color:#facc15; }
+    .investment-decision {
+      background: #0f171f;
+      border-radius: 24px;
+      padding: 1.5rem 2rem;
+      margin: 1.8rem 0;
+      border: 1px solid #2b3545;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .decision-badge { font-size: 1.8rem; font-weight:800; letter-spacing:-0.5px; }
+    .decision-badge.invest { color:#4ade80; } .decision-badge.reject { color:#f87171; } .decision-badge.acquire { color:#60a5fa; } .decision-badge.later { color:#facc15; }
+    .valuation { font-size:1.1rem; color:#cbd5e1; }
+    .valuation strong { color:white; }
+    .reason { max-width:400px; font-size:0.9rem; color:#94a3b8; }
+    /* leaderboard */
+    .leaderboard-list { display: flex; flex-direction: column; gap: 6px; }
+    .lb-item { display: flex; justify-content: space-between; padding: 0.5rem 0.8rem; background: #10171f; border-radius: 40px; border:1px solid #212b38; }
+    .lb-rank { font-weight:700; color:#facc15; margin-right:10px; }
+    .lb-name { font-weight:600; }
+    .lb-score { color:#94a3b8; }
+    /* confetti canvas */
+    #confetti-canvas {
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+    /* responsive */
+    @media (max-width: 900px) {
+      .form-grid { grid-template-columns:1fr; }
+      .judges-row { grid-template-columns: repeat(2,1fr); }
+      .score-grid { grid-template-columns: repeat(3,1fr); }
+    }
+    @media (max-width: 600px) {
+      .judges-row { grid-template-columns:1fr 1fr; }
+      .score-grid { grid-template-columns:1fr 1fr; }
+      .investment-decision { flex-direction:column; align-items:flex-start; gap:1rem; }
+    }
+    .hidden { display: none; }
+    .mt-2 { margin-top:1.2rem; }
+    .flex { display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+    .text-glow { text-shadow: 0 0 10px rgba(250,204,21,0.2); }
+  </style>
+</head>
+<body>
+<div class="container" id="app">
+  <header class="header">
+    <div class="logo"><i class="fas fa-shark"></i><span>AI Shark Tank</span></div>
+    <div class="badge"><i class="fas fa-robot"></i> v2 · live</div>
+  </header>
+
+  <!-- User Input -->
+  <div class="card">
+    <div class="card-title"><i class="fas fa-lightbulb"></i> Your Startup Pitch</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Startup Name</label><input id="startupName" placeholder="e.g. EcoCharge" value="NeuraMind"></div>
+      <div class="form-group"><label>Funding Ask ($)</label><input id="fundingAsk" placeholder="e.g. 500000" value="750000"></div>
+      <div class="form-group"><label>Problem Statement</label><textarea id="problem" rows="1">Mental health support is inaccessible for remote workers.</textarea></div>
+      <div class="form-group"><label>Solution</label><textarea id="solution" rows="1">AI-powered 24/7 coaching & mindfulness.</textarea></div>
+      <div class="form-group"><label>Revenue Model</label><textarea id="revenue" rows="1">Subscription: $29/mo, B2B enterprise plans.</textarea></div>
+      <div class="form-group"><label>Target Audience</label><textarea id="audience" rows="1">Remote professionals, burnout-prone teams.</textarea></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn" id="pitchBtn"><i class="fas fa-rocket"></i> Pitch to Sharks</button>
+      <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-undo-alt"></i> Reset</button>
+    </div>
+  </div>
+
+  <!-- Judges -->
+  <div class="judges-row" id="judgesRow">
+    <div class="judge-card" data-judge="vc"><div class="judge-avatar">🦈</div><div class="judge-name">Venture Capitalist</div><div class="judge-focus">market size & scalability</div></div>
+    <div class="judge-card" data-judge="founder"><div class="judge-avatar">🧑‍💼</div><div class="judge-name">Founder</div><div class="judge-focus">execution</div></div>
+    <div class="judge-card" data-judge="customer"><div class="judge-avatar">🧑‍🤝‍🧑</div><div class="judge-name">Customer</div><div class="judge-focus">usefulness</div></div>
+    <div class="judge-card" data-judge="angel"><div class="judge-avatar">👼</div><div class="judge-name">Angel Investor</div><div class="judge-focus">profitability</div></div>
+  </div>
+
+  <!-- Pitch & Q&A -->
+  <div class="card pitch-area" id="pitchArea">
+    <div class="card-title"><i class="fas fa-comment-dots"></i> Pitch & Judge Q&A</div>
+    <div id="pitchDisplay" style="background:#10171f; border-radius:20px; padding:1.2rem; margin-bottom:1rem; border-left:4px solid #facc15;">
+      <p><strong style="color:#facc15;">NeuraMind</strong> — <span style="color:#94a3b8;">Solving mental health access for remote workers with AI coaching.</span></p>
+      <div style="font-size:0.9rem; color:#b9c7db; margin-top:6px;">💰 $750,000 · B2B subscription</div>
+    </div>
+    <div id="qaContainer">
+      <!-- dynamic Q&A -->
+      <div class="question-bubble"><span class="q">Q:</span> What's your TAM? <span class="judge-tag">🦈 VC</span></div>
+      <div class="answer-input"><input id="answerInput" placeholder="Your answer..." value="40M remote workers, 15% penetration"><button class="btn" id="answerBtn" style="padding:0.4rem 1.2rem;">Answer</button></div>
+    </div>
+    <div id="judgeReactions" style="margin-top:0.8rem; display:flex; gap:1rem; flex-wrap:wrap; font-size:0.9rem; color:#94a3b8;"></div>
+  </div>
+
+  <!-- Scores & Decision -->
+  <div class="card" id="resultsCard">
+    <div class="card-title"><i class="fas fa-chart-pie"></i> Scoring & Investment</div>
+    <div class="score-grid" id="scoreGrid">
+      <div class="score-item"><div class="label">Market Potential</div><div class="value" id="sMarket">78</div></div>
+      <div class="score-item"><div class="label">Innovation</div><div class="value" id="sInnovation">82</div></div>
+      <div class="score-item"><div class="label">Business Model</div><div class="value" id="sBiz">74</div></div>
+      <div class="score-item"><div class="label">Execution</div><div class="value" id="sExecution">69</div></div>
+      <div class="score-item"><div class="label">Investment Worthiness</div><div class="value" id="sInvestment">81</div></div>
+    </div>
+    <div class="investment-decision" id="investmentDecision">
+      <div><span class="decision-badge invest" id="decisionBadge">✅ Invest</span> <span class="valuation" id="valuationDisplay"><strong>$3.2M</strong> valuation</span></div>
+      <div class="reason" id="reasonDisplay">Strong market fit and scalable model.</div>
+    </div>
+    <div class="flex">
+      <button class="btn btn-secondary" id="downloadPDF"><i class="fas fa-file-pdf"></i> Download Report</button>
+      <button class="btn btn-secondary" id="shareResult"><i class="fas fa-share-alt"></i> Share</button>
+      <button class="btn btn-secondary" id="confettiBtn"><i class="fas fa-confetti"></i> Celebrate</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="card" style="margin-top:2rem;">
+    <div class="card-title"><i class="fas fa-trophy"></i> Leaderboard</div>
+    <div class="leaderboard-list" id="leaderboardList">
+      <div class="lb-item"><span><span class="lb-rank">#1</span><span class="lb-name">EcoCharge</span></span><span class="lb-score">94</span></div>
+      <div class="lb-item"><span><span class="lb-rank">#2</span><span class="lb-name">NeuraMind</span></span><span class="lb-score">88</span></div>
+      <div class="lb-item"><span><span class="lb-rank">#3</span><span class="lb-name">HealthLink</span></span><span class="lb-score">76</span></div>
+    </div>
+  </div>
+</div>
+<canvas id="confetti-canvas"></canvas>
+<script>
+  (function() {
+    // ---------- data ----------
+    const judges = [
+      { id: 'vc', name: 'Venture Capitalist', emoji: '🦈', focus: 'market size & scalability' },
+      { id: 'founder', name: 'Founder', emoji: '🧑‍💼', focus: 'execution' },
+      { id: 'customer', name: 'Customer', emoji: '🧑‍🤝‍🧑', focus: 'usefulness' },
+      { id: 'angel', name: 'Angel Investor', emoji: '👼', focus: 'profitability' }
+    ];
+
+    // state
+    let state = {
+      startupName: 'NeuraMind',
+      problem: 'Mental health support is inaccessible for remote workers.',
+      solution: 'AI-powered 24/7 coaching & mindfulness.',
+      revenue: 'Subscription: $29/mo, B2B enterprise plans.',
+      audience: 'Remote professionals, burnout-prone teams.',
+      fundingAsk: 750000,
+      scores: { market: 78, innovation: 82, biz: 74, execution: 69, investment: 81 },
+      decision: 'Invest',
+      valuation: 3200000,
+      reason: 'Strong market fit and scalable model.',
+      qa: [],
+      currentQuestionIndex: 0,
+      questions: [
+        { judge: 'vc', q: 'What is your total addressable market (TAM)?' },
+        { judge: 'vc', q: 'How do you plan to scale to 1M users?' },
+        { judge: 'founder', q: 'What is your go-to-market strategy?' },
+        { judge: 'founder', q: 'How will you acquire your first 1000 customers?' },
+        { judge: 'customer', q: 'How does this improve my daily life?' },
+        { judge: 'customer', q: 'What makes it better than existing apps?' },
+        { judge: 'angel', q: 'What are your unit economics?' },
+        { judge: 'angel', q: 'When do you reach profitability?' }
+      ],
+      answers: [],
+      pitchDone: false
+    };
+
+    // DOM refs
+    const $ = id => document.getElementById(id);
+    const startupName = $('startupName');
+    const problem = $('problem');
+    const solution = $('solution');
+    const revenue = $('revenue');
+    const audience = $('audience');
+    const fundingAsk = $('fundingAsk');
+    const pitchBtn = $('pitchBtn');
+    const resetBtn = $('resetBtn');
+    const pitchDisplay = $('pitchDisplay');
+    const qaContainer = $('qaContainer');
+    const answerInput = $('answerInput');
+    const answerBtn = $('answerBtn');
+    const judgeReactions = $('judgeReactions');
+    const scoreGrid = { market: $('sMarket'), innovation: $('sInnovation'), biz: $('sBiz'), execution: $('sExecution'), investment: $('sInvestment') };
+    const decisionBadge = $('decisionBadge');
+    const valuationDisplay = $('valuationDisplay');
+    const reasonDisplay = $('reasonDisplay');
+    const downloadPDF = $('downloadPDF');
+    const shareResult = $('shareResult');
+    const confettiBtn = $('confettiBtn');
+
+    // helper: update UI from state
+    function renderPitch() {
+      const name = state.startupName || 'Unnamed';
+      pitchDisplay.innerHTML = `<p><strong style="color:#facc15;">${name}</strong> — <span style="color:#94a3b8;">${state.problem || 'No problem stated.'}</span></p>
+      <div style="font-size:0.9rem; color:#b9c7db; margin-top:6px;">💰 $${Number(state.fundingAsk).toLocaleString()} · ${state.revenue || ''}</div>`;
+    }
+
+    function renderScores() {
+      scoreGrid.market.innerText = state.scores.market;
+      scoreGrid.innovation.innerText = state.scores.innovation;
+      scoreGrid.biz.innerText = state.scores.biz;
+      scoreGrid.execution.innerText = state.scores.execution;
+      scoreGrid.investment.innerText = state.scores.investment;
+      const total = Object.values(state.scores).reduce((a,b)=>a+b,0);
+      // decision badge
+      const d = state.decision;
+      decisionBadge.className = 'decision-badge';
+      if (d === 'Invest') decisionBadge.classList.add('invest');
+      else if (d === 'Reject') decisionBadge.classList.add('reject');
+      else if (d === 'Acquire') decisionBadge.classList.add('acquire');
+      else if (d === 'Come Back Later') decisionBadge.classList.add('later');
+      decisionBadge.innerText = d === 'Invest' ? '✅ Invest' : d === 'Reject' ? '❌ Reject' : d === 'Acquire' ? '🤝 Acquire' : '⏳ Come Back Later';
+      valuationDisplay.innerHTML = `<strong>$${(state.valuation/1000000).toFixed(1)}M</strong> valuation`;
+      reasonDisplay.innerText = state.reason;
+    }
+
+    function renderQA() {
+      if (state.currentQuestionIndex >= state.questions.length) {
+        qaContainer.innerHTML = `<div style="color:#94a3b8; padding:1rem 0;">✅ All questions answered. See decision below.</div>`;
+        return;
+      }
+      const qItem = state.questions[state.currentQuestionIndex];
+      const judge = judges.find(j => j.id === qItem.judge) || { name: 'Judge', emoji: '🧑‍⚖️' };
+      qaContainer.innerHTML = `
+        <div class="question-bubble"><span class="q">Q:</span> ${qItem.q} <span class="judge-tag">${judge.emoji} ${judge.name}</span></div>
+        <div class="answer-input"><input id="answerInput" placeholder="Your answer..." value="${state.answers[state.currentQuestionIndex] || ''}"><button class="btn" id="answerBtn" style="padding:0.4rem 1.2rem;">Answer</button></div>
+      `;
+      // rebind answer
+      const newAnswerInput = document.getElementById('answerInput');
+      const newAnswerBtn = document.getElementById('answerBtn');
+      if (newAnswerBtn) {
+        newAnswerBtn.addEventListener('click', function() {
+          const val = newAnswerInput.value.trim();
+          if (!val) return;
+          state.answers[state.currentQuestionIndex] = val;
+          // reaction
+          const judgeId = qItem.judge;
+          const reactions = ['💡 Interesting!', '🤔 I see.', '👍 Good point.', '🔥 Nice!', '😏 Hmm...', '👏 Great answer.'];
+          const r = reactions[Math.floor(Math.random() * reactions.length)];
+          judgeReactions.innerHTML = `<span>${judge.emoji} ${judge.name}: ${r}</span>`;
+          // move to next question or finish
+          state.currentQuestionIndex++;
+          if (state.currentQuestionIndex < state.questions.length) {
+            renderQA();
+          } else {
+            // generate final scores & decision
+            generateFinalDecision();
+            renderScores();
+            renderQA();
+            // confetti if invest
+            if (state.decision === 'Invest') launchConfetti();
+          }
+        });
+      }
+      // re-focus
+      if (newAnswerInput) newAnswerInput.focus();
+    }
+
+    function generateFinalDecision() {
+      // simulate AI scoring based on answers & inputs
+      const base = Math.floor(Math.random() * 20) + 60;
+      const market = Math.min(98, base + Math.floor(Math.random() * 15));
+      const innovation = Math.min(98, base + Math.floor(Math.random() * 12));
+      const biz = Math.min(98, base + Math.floor(Math.random() * 10));
+      const execution = Math.min(98, base + Math.floor(Math.random() * 18) - 5);
+      const investment = Math.min(98, Math.floor((market + innovation + biz + execution) / 4) + Math.floor(Math.random() * 10));
+      state.scores = { market, innovation, biz, execution, investment };
+      const total = (market + innovation + biz + execution + investment) / 5;
+      // decision logic
+      let decision, valuation, reason;
+      if (total > 80) { decision = 'Invest'; valuation = 2000000 + Math.floor(Math.random() * 3000000); reason = 'Strong metrics, scalable, great team.'; }
+      else if (total > 65) { decision = 'Come Back Later'; valuation = 500000 + Math.floor(Math.random() * 1000000); reason = 'Promising but needs more traction.'; }
+      else if (total > 50) { decision = 'Acquire'; valuation = 1000000 + Math.floor(Math.random() * 1500000); reason = 'Strategic fit, we want your tech.'; }
+      else { decision = 'Reject'; valuation = 0; reason = 'Market too small, unclear unit economics.'; }
+      state.decision = decision;
+      state.valuation = valuation;
+      state.reason = reason;
+      // update leaderboard (mock)
+      const lb = document.getElementById('leaderboardList');
+      if (decision === 'Invest') {
+        const entry = document.createElement('div');
+        entry.className = 'lb-item';
+        entry.innerHTML = `<span><span class="lb-rank">#1</span><span class="lb-name">${state.startupName}</span></span><span class="lb-score">${Math.floor(total)}</span>`;
+        lb.prepend(entry);
+        if (lb.children.length > 5) lb.removeChild(lb.lastChild);
+      }
+    }
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      let pieces = [];
+      for (let i = 0; i < 150; i++) {
+        pieces.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height, w: 6 + Math.random() * 8, h: 4 + Math.random() * 6, color: `hsl(${Math.random() * 360}, 80%, 60%)`, vy: 2 + Math.random() * 4, vx: (Math.random() - 0.5) * 2 });
+      }
+      let frame;
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        let alive = false;
+        pieces.forEach(p => {
+          p.y += p.vy;
+          p.x += p.vx;
+          if (p.y < canvas.height + 20) alive = true;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+        });
+        if (alive) { frame = requestAnimationFrame(draw); } else { ctx.clearRect(0,0,canvas.width,canvas.height); }
+      }
+      draw();
+      setTimeout(() => { if (frame) cancelAnimationFrame(frame); ctx.clearRect(0,0,canvas.width,canvas.height); }, 4000);
+    }
+
+    // reset
+    function resetAll() {
+      state.startupName = startupName.value || 'NeuraMind';
+      state.problem = problem.value || 'Mental health support is inaccessible for remote workers.';
+      state.solution = solution.value || 'AI-powered 24/7 coaching & mindfulness.';
+      state.revenue = revenue.value || 'Subscription: $29/mo, B2B enterprise plans.';
+      state.audience = audience.value || 'Remote professionals, burnout-prone teams.';
+      state.fundingAsk = parseInt(fundingAsk.value) || 750000;
+      state.currentQuestionIndex = 0;
+      state.answers = [];
+      state.questions = [
+        { judge: 'vc', q: 'What is your total addressable market (TAM)?' },
+        { judge: 'vc', q: 'How do you plan to scale to 1M users?' },
+        { judge: 'founder', q: 'What is your go-to-market strategy?' },
+        { judge: 'founder', q: 'How will you acquire your first 1000 customers?' },
+        { judge: 'customer', q: 'How does this improve my daily life?' },
+        { judge: 'customer', q: 'What makes it better than existing apps?' },
+        { judge: 'angel', q: 'What are your unit economics?' },
+        { judge: 'angel', q: 'When do you reach profitability?' }
+      ];
+      judgeReactions.innerHTML = '';
+      renderPitch();
+      renderScores();
+      renderQA();
+    }
+
+    // pitch button
+    pitchBtn.addEventListener('click', function() {
+      state.startupName = startupName.value || 'Unnamed';
+      state.problem = problem.value || 'No problem stated.';
+      state.solution = solution.value || 'No solution.';
+      state.revenue = revenue.value || 'No revenue model.';
+      state.audience = audience.value || 'No audience.';
+      state.fundingAsk = parseInt(fundingAsk.value) || 0;
+      state.currentQuestionIndex = 0;
+      state.answers = [];
+      state.questions = [
+        { judge: 'vc', q: 'What is your total addressable market (TAM)?' },
+        { judge: 'vc', q: 'How do you plan to scale to 1M users?' },
+        { judge: 'founder', q: 'What is your go-to-market strategy?' },
+        { judge: 'founder', q: 'How will you acquire your first 1000 customers?' },
+        { judge: 'customer', q: 'How does this improve my daily life?' },
+        { judge: 'customer', q: 'What makes it better than existing apps?' },
+        { judge: 'angel', q: 'What are your unit economics?' },
+        { judge: 'angel', q: 'When do you reach profitability?' }
+      ];
+      judgeReactions.innerHTML = '';
+      renderPitch();
+      renderScores();
+      renderQA();
+      // scroll
+      document.getElementById('pitchArea').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    resetBtn.addEventListener('click', resetAll);
+
+    // download PDF
+    downloadPDF.addEventListener('click', function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text('AI Shark Tank Report', 20, 30);
+      doc.setFontSize(12);
+      doc.text(`Startup: ${state.startupName}`, 20, 50);
+      doc.text(`Problem: ${state.problem}`, 20, 60);
+      doc.text(`Solution: ${state.solution}`, 20, 70);
+      doc.text(`Revenue: ${state.revenue}`, 20, 80);
+      doc.text(`Funding Ask: $${Number(state.fundingAsk).toLocaleString()}`, 20, 90);
+      doc.text(`Decision: ${state.decision}`, 20, 110);
+      doc.text(`Valuation: $${(state.valuation/1000000).toFixed(1)}M`, 20, 120);
+      doc.text(`Reason: ${state.reason}`, 20, 130);
+      doc.text(`Scores: Market ${state.scores.market} | Innovation ${state.scores.innovation} | Biz ${state.scores.biz} | Execution ${state.scores.execution} | Investment ${state.scores.investment}`, 20, 150);
+      doc.save('shark_tank_report.pdf');
+    });
+
+    // share
+    shareResult.addEventListener('click', function() {
+      if (navigator.share) {
+        navigator.share({ title: 'Shark Tank Result', text: `${state.startupName} — ${state.decision}! Valuation $${(state.valuation/1000000).toFixed(1)}M`, url: window.location.href });
+      } else {
+        alert(`Share: ${state.startupName} — ${state.decision}! Valuation $${(state.valuation/1000000).toFixed(1)}M`);
+      }
+    });
+
+    confettiBtn.addEventListener('click', launchConfetti);
+
+    // initial render
+    resetAll();
+  })();
+</script>
+</body>
+</html>
