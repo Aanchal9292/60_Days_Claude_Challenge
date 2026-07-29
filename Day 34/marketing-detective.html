@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Marketing Detective</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#0b1210;
+  --board:#152420;
+  --board2:#0f1c19;
+  --accent:#10b981;
+  --accent2:#34d399;
+  --accent-dim:#065f46;
+  --paper:#f3ead8;
+  --paper2:#e8dcc0;
+  --ink:#241d10;
+  --pin:#ef4444;
+  --gold:#d4af37;
+  --text:#e7f5ee;
+  --muted:#9db8ab;
+  --danger:#ef4444;
+  --success:#34d399;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Georgia','Times New Roman',serif;
+  background:
+    radial-gradient(ellipse at top left, rgba(16,185,129,0.06), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(16,185,129,0.05), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+#app{min-height:100vh; position:relative;}
+
+/* corkboard texture */
+.corkboard{
+  background-color:var(--board);
+  background-image:
+    radial-gradient(rgba(0,0,0,0.25) 1px, transparent 1px),
+    radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:6px 6px, 9px 9px;
+  background-position:0 0, 3px 3px;
+  border:10px solid #1c1410;
+  border-image: linear-gradient(135deg,#2b2016,#1c1410) 1;
+  box-shadow: inset 0 0 120px rgba(0,0,0,0.6), 0 20px 60px rgba(0,0,0,0.6);
+}
+
+h1,h2,h3{font-family:'Georgia',serif; letter-spacing:0.5px;}
+
+.glow{text-shadow:0 0 12px rgba(16,185,129,0.6);}
+
+.btn{
+  background:linear-gradient(160deg,var(--accent2),var(--accent-dim));
+  color:#04120c;
+  border:none;
+  padding:12px 26px;
+  font-size:15px;
+  font-weight:700;
+  border-radius:6px;
+  cursor:pointer;
+  letter-spacing:0.5px;
+  box-shadow:0 6px 18px rgba(16,185,129,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  transition:all 0.25s ease;
+  text-transform:uppercase;
+  font-family:Georgia,serif;
+}
+.btn:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(16,185,129,0.5);}
+.btn:active{transform:translateY(0px);}
+.btn.secondary{
+  background:linear-gradient(160deg,#2a3733,#1a2320);
+  color:var(--text);
+  box-shadow:0 6px 14px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.btn.danger{background:linear-gradient(160deg,#f87171,#991b1b); color:#fff;}
+.btn:disabled{opacity:0.4; cursor:not-allowed; transform:none;}
+
+/* ---------- Landing ---------- */
+.landing{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:100vh; text-align:center; padding:40px 20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(16,185,129,0.12), transparent 55%),
+    var(--bg);
+}
+.badge{
+  width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--accent2), var(--accent-dim) 70%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px; margin-bottom:24px;
+  box-shadow:0 0 40px rgba(16,185,129,0.5), inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -6px 10px rgba(0,0,0,0.4);
+  animation:pulseGlow 3s ease-in-out infinite;
+}
+@keyframes pulseGlow{
+  0%,100%{box-shadow:0 0 30px rgba(16,185,129,0.4), inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -6px 10px rgba(0,0,0,0.4);}
+  50%{box-shadow:0 0 55px rgba(16,185,129,0.75), inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -6px 10px rgba(0,0,0,0.4);}
+}
+.landing h1{font-size:48px; margin:0; color:var(--text);}
+.landing .sub{color:var(--muted); font-size:18px; max-width:560px; margin:16px 0 34px;}
+.case-count{font-size:13px; color:var(--accent2); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;}
+
+/* ---------- Case Assignment ---------- */
+.assignment-wrap{max-width:720px;margin:0 auto;padding:60px 24px;text-align:center;}
+.folder{
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:4px 12px 12px 12px;
+  padding:36px;
+  position:relative;
+  box-shadow:0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.1);
+  transform:rotate(-1deg);
+  animation:dropIn 0.6s cubic-bezier(.2,.9,.3,1.2);
+}
+.folder::before{
+  content:'';
+  position:absolute; top:-18px; left:30px;
+  width:140px; height:26px;
+  background:var(--paper2);
+  border-radius:6px 6px 0 0;
+}
+@keyframes dropIn{
+  from{opacity:0; transform:translateY(-40px) rotate(-6deg);}
+  to{opacity:1; transform:translateY(0) rotate(-1deg);}
+}
+.stamp{
+  display:inline-block; border:3px solid var(--danger); color:var(--danger);
+  padding:6px 16px; font-weight:900; letter-spacing:3px; text-transform:uppercase;
+  transform:rotate(-8deg); border-radius:6px; margin-bottom:14px; font-size:13px;
+  opacity:0.85;
+}
+.folder h2{margin:6px 0 4px; font-size:26px;}
+.folder .meta{font-size:14px; color:#4a4030; margin-bottom:18px;}
+.folder .brief{font-size:15px;line-height:1.7; text-align:left; background:rgba(0,0,0,0.04); padding:16px; border-radius:6px; border-left:4px solid var(--accent-dim);}
+
+/* ---------- Progress ---------- */
+.progress-bar-wrap{
+  display:flex; justify-content:center; gap:10px; padding:18px 10px 4px;
+  flex-wrap:wrap;
+}
+.progress-step{
+  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted);
+  text-transform:uppercase; letter-spacing:1px;
+}
+.progress-dot{
+  width:12px;height:12px;border-radius:50%;
+  background:#2a3733; border:2px solid #3d4c47;
+  transition:all 0.3s;
+}
+.progress-step.active .progress-dot{background:var(--accent2); border-color:var(--accent2); box-shadow:0 0 10px var(--accent2);}
+.progress-step.done .progress-dot{background:var(--accent-dim); border-color:var(--accent2);}
+.progress-line{width:30px;height:2px;background:#2a3733;}
+
+/* ---------- Investigation Board ---------- */
+.board-wrap{padding:20px; max-width:1400px; margin:0 auto;}
+.board-header{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:10px 14px 20px;}
+.board-header h2{color:var(--accent2); margin:0;}
+.evidence-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:26px;
+  padding:30px;
+  min-height:400px;
+  position:relative;
+}
+.pin{
+  position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+  width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #ff8a8a, var(--pin));
+  box-shadow:0 3px 6px rgba(0,0,0,0.5);
+  z-index:3;
+}
+.note{
+  position:relative;
+  background:var(--paper);
+  color:var(--ink);
+  padding:20px 18px 16px;
+  border-radius:2px;
+  box-shadow:0 10px 20px rgba(0,0,0,0.45);
+  cursor:grab;
+  transform:rotate(var(--rot,-1deg));
+  transition:transform 0.25s ease, box-shadow 0.25s ease;
+  font-size:13.5px;
+  line-height:1.5;
+  user-select:none;
+  min-height:150px;
+}
+.note:hover{transform:rotate(0deg) scale(1.04) translateY(-4px); box-shadow:0 20px 34px rgba(0,0,0,0.6); z-index:5;}
+.note.dragging{opacity:0.5;}
+.note h4{margin:6px 0 8px; font-size:14px; color:var(--ink); border-bottom:1px dashed rgba(0,0,0,0.25); padding-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;}
+.note .tag{
+  position:absolute; top:8px; right:10px; font-size:9px; letter-spacing:1px;
+  color:#8a7c5a; text-transform:uppercase;
+}
+.note.folder-type{background:var(--paper2);}
+.note.chart-type{background:#fff8e7;}
+.note.flip{cursor:pointer;}
+
+.metric-row{display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0; border-bottom:1px dotted rgba(0,0,0,0.15);}
+.metric-bar-bg{background:rgba(0,0,0,0.12); height:6px; border-radius:4px; overflow:hidden; margin-top:3px;}
+.metric-bar-fill{height:100%; background:linear-gradient(90deg,var(--accent-dim),var(--accent2)); width:0%; transition:width 1.2s cubic-bezier(.2,.8,.3,1);}
+
+.comment-bubble{
+  background:rgba(0,0,0,0.05); border-radius:8px; padding:8px 10px; margin:6px 0; font-style:italic; font-size:12.5px;
+}
+
+.zone{
+  border:2px dashed rgba(16,185,129,0.35);
+  border-radius:12px;
+  padding:20px;
+  margin:20px 30px;
+  min-height:80px;
+  transition:all 0.25s;
+  background:rgba(16,185,129,0.03);
+}
+.zone.over{border-color:var(--accent2); background:rgba(16,185,129,0.12); box-shadow:0 0 30px rgba(16,185,129,0.2) inset;}
+.zone h3{margin:0 0 10px; color:var(--accent2); font-size:15px; text-transform:uppercase; letter-spacing:1px;}
+.zone .hint{color:var(--muted); font-size:12.5px;}
+.dropped-list{display:flex; gap:14px; flex-wrap:wrap;}
+
+/* ---------- Solve panel ---------- */
+.solve-wrap{max-width:900px; margin:0 auto; padding:20px 24px 60px;}
+.suspect-card{
+  background:var(--paper); color:var(--ink); border-radius:8px; padding:20px 22px;
+  margin-bottom:14px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  border:3px solid transparent; transition:all 0.2s;
+  position:relative;
+}
+.suspect-card:hover{transform:translateX(6px); box-shadow:0 12px 26px rgba(0,0,0,0.5);}
+.suspect-card.selected{border-color:var(--accent2); box-shadow:0 0 24px rgba(16,185,129,0.5);}
+.suspect-card h4{margin:0 0 6px;}
+.suspect-card .num{
+  position:absolute; top:-10px; left:-10px; width:30px;height:30px;border-radius:50%;
+  background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.4);
+}
+
+/* ---------- Case closed ---------- */
+.closed-wrap{
+  min-height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column;
+  text-align:center; padding:40px;
+}
+.stamp-big{
+  font-size:64px; font-weight:900; color:var(--danger); border:6px solid var(--danger);
+  padding:14px 40px; border-radius:10px; transform:rotate(-10deg); letter-spacing:4px;
+  animation:stampIn 0.5s cubic-bezier(.2,.9,.2,1.4);
+  text-transform:uppercase; margin-bottom:20px;
+  box-shadow:0 0 40px rgba(239,68,68,0.4);
+}
+@keyframes stampIn{
+  0%{opacity:0; transform:rotate(-10deg) scale(3);}
+  60%{opacity:1;}
+  100%{opacity:1; transform:rotate(-10deg) scale(1);}
+}
+.result-msg{font-size:20px; color:var(--muted); max-width:600px; margin-bottom:10px;}
+.result-msg.wrong{color:#f87171;}
+.result-msg.right{color:var(--accent2);}
+
+/* ---------- Learning report ---------- */
+.report-wrap{max-width:820px; margin:0 auto; padding:40px 24px 70px;}
+.report-card{
+  background:linear-gradient(160deg,var(--board2),var(--board));
+  border:1px solid rgba(16,185,129,0.25);
+  border-radius:14px; padding:26px 28px; margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+.report-card h3{color:var(--accent2); margin-top:0; display:flex; align-items:center; gap:8px;}
+.report-card ul{margin:8px 0 0; padding-left:22px; line-height:1.7;}
+.clue-item{padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; gap:10px;}
+.clue-item:last-child{border-bottom:none;}
+.clue-num{color:var(--accent2); font-weight:900;}
+
+/* misc */
+.container-narrow{max-width:1000px;margin:0 auto;}
+.fade-in{animation:fadeIn 0.5s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+.top-nav{display:flex; justify-content:space-between; align-items:center; padding:16px 26px;}
+.top-nav .brand{font-size:18px; letter-spacing:2px; color:var(--accent2); text-transform:uppercase; font-weight:700;}
+.small-muted{color:var(--muted); font-size:12.5px;}
+
+@media(max-width:600px){
+  .landing h1{font-size:32px;}
+  .stamp-big{font-size:38px; padding:10px 20px;}
+  .evidence-grid{padding:16px; gap:16px;}
+  .zone{margin:14px 8px;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+// ============ CASE DATA ============
+const CASES = [
+{
+  company:"Lumière Skincare",
+  industry:"Beauty & Cosmetics",
+  objective:"Launch a new anti-aging serum to a younger demographic than usual.",
+  audience:"Women aged 18-24, urban, trend-conscious",
+  channels:["Instagram Reels","TikTok","Influencer Partnerships","Email"],
+  budget:{ "Influencers":45,"Paid Social":30,"Email":10,"Content Production":15 },
+  metrics:{reach:"2.4M", ctr:"0.6%", engagement:"High (likes/comments)", conversions:"0.4%", sales:"$18,200"},
+  comments:[
+    "Love the aesthetic but I'm 45, not 20, and this is exactly what I need!",
+    "Why is this being sold to teenagers? Anti-aging at 19??",
+    "Cute video, but I have no idea what the product actually does."
+  ],
+  social:"Extremely high engagement on Reels (avg 500K views) but comment sections filled with confusion about who the product is for. Saves and shares high, purchase-intent comments low.",
+  mistake:"The campaign targeted the wrong age demographic — anti-aging products should target 35-55 year olds, not 18-24, causing high engagement but low conversion.",
+  clues:[
+    "CTR is unusually low (0.6%) despite massive reach and high engagement.",
+    "Customer comments repeatedly mention age mismatch and confusion about product purpose.",
+    "Influencers chosen were all under age 22 with predominantly Gen Z followings."
+  ],
+  explanation:"The creative and influencer strategy resonated emotionally with a young audience, generating vanity metrics like views and likes, but anti-aging serums are functionally irrelevant to that age group. The mismatch between message and audience need explains high engagement paired with dismal conversions.",
+  improvements:[
+    "Re-target campaign to women 35-55 who are actual buyers of anti-aging products.",
+    "Partner with influencers in the 35+ range with credibility on skincare aging concerns.",
+    "Adjust ad copy to clearly state ingredient benefits and skin concerns addressed."
+  ]
+},
+{
+  company:"UrbanCrate Meal Kits",
+  industry:"Food & Subscription",
+  objective:"Increase new subscriber sign-ups during a national ad push.",
+  audience:"Busy professionals, 25-40, in major metro areas",
+  channels:["TV Commercials","Google Search Ads","Podcast Sponsorships","Direct Mail"],
+  budget:{ "TV":50,"Search Ads":20,"Podcasts":20,"Direct Mail":10 },
+  metrics:{reach:"5.1M", ctr:"1.8%", engagement:"Moderate", conversions:"0.2%", sales:"$61,000"},
+  comments:[
+    "Tried to sign up on my phone and the site was impossible to use.",
+    "Kept tapping the button and nothing happened, gave up after 3 tries.",
+    "Saw the ad on TV, went to the site, but checkout kept freezing."
+  ],
+  social:"Twitter/X mentions spiked after TV airings but were dominated by complaints about the mobile site crashing during checkout. Podcast listeners reported the same issue in reviews.",
+  mistake:"The landing page and checkout flow were not mobile-optimized, causing massive drop-off despite strong ad-driven traffic.",
+  clues:[
+    "Conversion rate (0.2%) is drastically lower than industry benchmark despite huge reach.",
+    "Nearly all negative comments mention mobile site issues, not the product itself.",
+    "TV and podcast ads drive traffic mostly from mobile devices, where the failure occurred."
+  ],
+  explanation:"The campaign successfully generated massive top-of-funnel awareness and interest, but a broken or unresponsive mobile checkout experience caused the majority of interested customers to abandon before converting — a technical failure disguised as a marketing failure.",
+  improvements:[
+    "Conduct mobile UX testing and fix checkout flow before any large ad spend.",
+    "Add a simplified one-tap sign-up option for mobile visitors.",
+    "Monitor real-time conversion funnels during major campaign pushes to catch issues early."
+  ]
+},
+{
+  company:"PeakGear Outdoor Co.",
+  industry:"Outdoor & Apparel",
+  objective:"Promote a premium winter jacket line during early autumn.",
+  audience:"Outdoor enthusiasts, 25-55, cold climate regions",
+  channels:["Facebook Ads","YouTube Pre-roll","Retail Partnerships","SEO Blog"],
+  budget:{ "Facebook":35,"YouTube":25,"Retail":25,"SEO":15 },
+  metrics:{reach:"1.2M", ctr:"1.1%", engagement:"Low", conversions:"0.3%", sales:"$9,400"},
+  comments:[
+    "Beautiful jacket but way too early, it's 85 degrees here!",
+    "Saving this for when it's actually cold, not right now.",
+    "Why am I seeing snow jackets in September heatwave?"
+  ],
+  social:"Impressions were strong but click-through and saves were oddly seasonal-mismatched; regional data showed the ad ran nationally, including in regions experiencing an unseasonable heatwave.",
+  mistake:"Poor timing and lack of geo/seasonal targeting — the campaign launched during unseasonably warm weather without adjusting for regional climate conditions.",
+  clues:[
+    "Engagement is low despite decent reach, unusual for a visually appealing product.",
+    "Comments cluster around weather being 'too warm' for the product.",
+    "Budget allocation shows no geo-targeting or weather-based ad scheduling line item."
+  ],
+  explanation:"Even a well-designed campaign can fail if it launches at the wrong moment. Consumers don't buy winter gear during a heatwave regardless of ad quality — the timing mismatch, not the creative or targeting demographic, tanked performance.",
+  improvements:[
+    "Use weather-triggered ad scheduling to align messaging with actual regional conditions.",
+    "Delay national launch until temperature data shows seasonal onset.",
+    "Test regional micro-launches before scaling nationally."
+  ]
+},
+{
+  company:"BrightBite Dental Co.",
+  industry:"Healthcare / Consumer Products",
+  objective:"Drive online sales of a new whitening kit via a discount promotion.",
+  audience:"Adults 22-45 interested in dental care",
+  channels:["Email Marketing","Facebook Ads","Coupon Sites"],
+  budget:{ "Email":20,"Facebook":40,"Coupon Sites":40 },
+  metrics:{reach:"800K", ctr:"3.2%", engagement:"High", conversions:"4.1%", sales:"$3,100"},
+  comments:[
+    "Got it for 70% off, great deal, but I probably won't buy again at full price.",
+    "Only bought because of the coupon site discount.",
+    "Nice product, wouldn't pay $45 for it though."
+  ],
+  social:"High click and conversion rate on paper, but average order value was extremely low and repeat-purchase rate near zero. Coupon-site traffic dominated over branded traffic.",
+  mistake:"Over-reliance on deep discounting through coupon sites attracted deal-seekers rather than loyal customers, resulting in high conversions but poor revenue and no retention.",
+  clues:[
+    "Sales figure ($3,100) is oddly low despite strong CTR and conversion rate.",
+    "Comments repeatedly reference discounts and reluctance to pay full price.",
+    "The majority of budget and traffic came from third-party coupon sites, not branded channels."
+  ],
+  explanation:"The campaign metrics looked successful on the surface (high CTR, high conversion) but the customers acquired were price-driven bargain hunters with low lifetime value, explaining the disconnect between conversion rate and actual revenue/retention.",
+  improvements:[
+    "Shift budget from coupon sites toward brand-building channels that attract loyal customers.",
+    "Use limited, time-boxed discounts instead of deep blanket discounts.",
+    "Introduce a loyalty program to convert first-time discount buyers into repeat customers."
+  ]
+},
+{
+  company:"NovaStream Media",
+  industry:"Streaming / Entertainment",
+  objective:"Boost sign-ups for a new streaming service during launch month.",
+  audience:"General population, 18-65, cord-cutters",
+  channels:["TV","Billboard","Podcast Ads","App Store Ads"],
+  budget:{ "TV":30,"Billboard":20,"Podcast":25,"App Store":25 },
+  metrics:{reach:"12M", ctr:"0.9%", engagement:"Moderate", conversions:"0.15%", sales:"$0 (revenue via subs)"},
+  comments:[
+    "I tried to sign up but the app crashed every time on launch day.",
+    "Servers were down for hours, missed the free trial deadline.",
+    "Excited for this but couldn't even create an account."
+  ],
+  social:"App Store reviews cratered to 1.5 stars in the first week, almost entirely due to server outages and login failures, despite huge ad-driven interest and downloads.",
+  mistake:"Server infrastructure was not scaled to handle the traffic surge generated by the marketing campaign, resulting in outages that destroyed the launch experience.",
+  clues:[
+    "Reach is massive (12M) but conversion rate is far below industry norms for entertainment launches.",
+    "Nearly all comments and reviews mention technical failures, not lack of interest.",
+    "App Store ratings dropped sharply right after the ad campaign peaked in reach."
+  ],
+  explanation:"This is a classic case of marketing outperforming operations — the campaign successfully created massive demand, but backend infrastructure couldn't support the resulting traffic, turning a marketing win into a brand crisis.",
+  improvements:[
+    "Load-test infrastructure for expected campaign-driven traffic before launch.",
+    "Stagger the campaign rollout regionally to manage server load.",
+    "Have a rapid-response customer service plan ready for launch-day issues."
+  ]
+},
+{
+  company:"GreenLeaf Grocers",
+  industry:"Retail / Grocery",
+  objective:"Promote a new organic produce line via a local awareness campaign.",
+  audience:"Health-conscious families, 30-50, suburban",
+  channels:["Local Radio","Flyers","Facebook Local Ads","In-store Signage"],
+  budget:{ "Radio":30,"Flyers":20,"Facebook":30,"Signage":20 },
+  metrics:{reach:"300K", ctr:"2.0%", engagement:"Moderate", conversions:"1.9%", sales:"$14,700"},
+  comments:[
+    "Ad said 'organic prices you'll love' but it was way more expensive than the store next door.",
+    "Felt misled, the discount mentioned in the flyer wasn't at checkout.",
+    "Great produce, but the ad pricing didn't match in-store pricing at all."
+  ],
+  social:"Local Facebook group had multiple threads calling out the price discrepancy between advertised pricing and actual in-store pricing, generating community distrust.",
+  mistake:"Inconsistent pricing between the advertised promotion and the actual in-store experience created a trust gap and disappointed customers who felt misled.",
+  clues:[
+    "Conversions are decent but review sentiment is negative despite people buying.",
+    "Multiple comments specifically cite a mismatch between ad pricing and checkout pricing.",
+    "No coordination line item exists between marketing and in-store pricing/inventory teams."
+  ],
+  explanation:"The campaign drove people into stores effectively, but a lack of internal coordination between marketing promises and actual pricing execution damaged trust — proving that even successful traffic-driving campaigns fail if the promise isn't honored in-store.",
+  improvements:[
+    "Align pricing communication between marketing and store operations before launch.",
+    "Add clear expiration dates and fine print to promotional pricing.",
+    "Run a post-purchase survey to catch pricing complaints early."
+  ]
+},
+{
+  company:"ZoomPay Fintech",
+  industry:"Financial Technology",
+  objective:"Acquire new users for a peer-to-peer payment app.",
+  audience:"Young adults 18-30, tech-savvy",
+  channels:["TikTok Ads","Referral Program","Influencer Marketing"],
+  budget:{ "TikTok":40,"Referral":35,"Influencers":25 },
+  metrics:{reach:"3.9M", ctr:"2.7%", engagement:"High", conversions:"3.5%", sales:"N/A (app installs: 140K)"},
+  comments:[
+    "Signed up for the referral bonus, deleted the app after getting my $10.",
+    "Only here for the free money, not actually using it to pay anyone.",
+    "My friend sent me a link so we could both get the bonus, haven't opened it since."
+  ],
+  social:"Installs spiked dramatically but 30-day retention data (not shown in initial reports) revealed most users were referral-bonus hunters who churned almost immediately.",
+  mistake:"The referral incentive was too generous and untethered from actual usage requirements, attracting bonus-hunters instead of genuine long-term users.",
+  clues:[
+    "Install numbers are excellent but sales/usage-based revenue shows 'N/A', a red flag.",
+    "Comments overwhelmingly mention deleting the app after claiming a bonus.",
+    "Referral program required no minimum transactions or usage to unlock the reward."
+  ],
+  explanation:"High installs and conversions look impressive but the referral structure rewarded signing up rather than genuine engagement, attracting short-term bonus hunters who inflated acquisition metrics without contributing to real, sustained platform usage.",
+  improvements:[
+    "Require a minimum number of transactions before releasing referral bonuses.",
+    "Track and report retention/activation rates, not just installs.",
+    "Shift some incentive budget toward users who make repeat transactions."
+  ]
+},
+{
+  company:"Solstice Fitness Studios",
+  industry:"Health & Fitness",
+  objective:"Fill class capacity for a new studio location.",
+  audience:"Fitness enthusiasts, 25-45, local to studio",
+  channels:["Instagram Ads","Local SEO","Google Maps Ads","Referral Cards"],
+  budget:{ "Instagram":40,"Local SEO":20,"Google Maps":25,"Referral":15 },
+  metrics:{reach:"210K", ctr:"4.5%", engagement:"High", conversions:"6.0%", sales:"$22,000 (memberships)"},
+  comments:[
+    "Signed up for the free trial class, showed up and it was cancelled with no notice.",
+    "Booked online but the studio said they had no record of my reservation.",
+    "Loved the ad, but the actual booking system was a mess."
+  ],
+  social:"Instagram DMs flooded with booking confusion; the studio's third-party scheduling widget was not synced properly with actual class calendars.",
+  mistake:"The online booking system was disconnected from the studio's real-time class schedule, causing overbooking and cancellation issues that undermined an otherwise excellent campaign.",
+  clues:[
+    "CTR and conversion rates are both excellent, showing strong campaign performance.",
+    "Comments consistently mention booking/scheduling errors, not dissatisfaction with the offer itself.",
+    "The studio uses a separate third-party booking widget not integrated with their internal calendar."
+  ],
+  explanation:"The marketing itself worked extremely well — strong targeting, creative, and offer. The failure occurred downstream in the customer journey due to a disconnected booking system, showing that operational integration is as critical as the campaign itself.",
+  improvements:[
+    "Integrate the booking widget directly with the real-time class calendar.",
+    "Send automated confirmation and reminder messages to reduce no-shows/confusion.",
+    "Audit the full customer journey from ad click to studio arrival."
+  ]
+},
+{
+  company:"PixelForge Games",
+  industry:"Video Games / Entertainment",
+  objective:"Drive pre-orders for a highly anticipated video game sequel.",
+  audience:"Gamers 16-35, fans of the original title",
+  channels:["YouTube Ads","Twitch Sponsorships","Reddit Ads","Email"],
+  budget:{ "YouTube":30,"Twitch":30,"Reddit":25,"Email":15 },
+  metrics:{reach:"6.5M", ctr:"5.1%", engagement:"Very High", conversions:"0.8%", sales:"$210,000"},
+  comments:[
+    "Trailer looked amazing but changed the entire art style from the original, feels like a different game.",
+    "Was going to pre-order but this doesn't look like the game I fell in love with.",
+    "Great production value, wrong direction for the franchise."
+  ],
+  social:"Reddit threads about the trailer had thousands of upvotes but top comments overwhelmingly criticized the art style change; sentiment analysis showed excitement mixed with betrayal from core fans.",
+  mistake:"A drastic, unannounced art style change alienated the core fanbase, leading to high engagement (debate/outrage) but disappointing pre-order conversion relative to reach and hype.",
+  clues:[
+    "Engagement is extremely high, but conversions are surprisingly low for such a beloved franchise.",
+    "Comments focus on a specific creative change rather than pricing or technical issues.",
+    "The campaign targeted existing fans of the original game almost exclusively."
+  ],
+  explanation:"The campaign reached and engaged exactly the right core audience, but the product decision itself (an art style overhaul) conflicted with what that specific audience valued, causing curiosity and debate rather than purchase intent.",
+  improvements:[
+    "Conduct fan sentiment testing on major creative changes before the public trailer reveal.",
+    "Frame the art change with in-universe narrative context to build buy-in.",
+    "Offer a limited demo to let core fans experience the new direction before committing to a purchase."
+  ]
+},
+{
+  company:"Aurora Home Goods",
+  industry:"E-commerce / Home Décor",
+  objective:"Increase holiday season sales through a broad digital campaign.",
+  audience:"Homeowners 28-55, interested in interior design",
+  channels:["Pinterest Ads","Google Shopping","Retargeting Ads","SMS"],
+  budget:{ "Pinterest":25,"Google Shopping":30,"Retargeting":30,"SMS":15 },
+  metrics:{reach:"1.8M", ctr:"2.3%", engagement:"Moderate", conversions:"2.8%", sales:"$95,000"},
+  comments:[
+    "Ordered a lamp on Nov 20th for a holiday gift, still hasn't arrived and it's past Christmas.",
+    "No shipping updates at all, customer service didn't respond for a week.",
+    "Great product photos, terrible follow-through on delivery."
+  ],
+  social:"A surge of complaints on Instagram and X in late December, entirely centered on shipping delays and lack of order communication, despite strong pre-holiday ad performance.",
+  mistake:"The campaign drove more holiday orders than the fulfillment and shipping operation could handle, leading to missed delivery deadlines and reputational damage.",
+  clues:[
+    "Sales and conversions look strong throughout the campaign period itself.",
+    "Complaint volume spikes specifically after the campaign period ends, not during it.",
+    "There's no mention of fulfillment capacity planning in the campaign budget."
+  ],
+  explanation:"The campaign succeeded in generating demand within its live window, but the fulfillment operation wasn't scaled to match holiday order volume, causing a wave of post-campaign complaints that a purely marketing-metrics view would miss entirely.",
+  improvements:[
+    "Coordinate with operations/fulfillment teams to confirm capacity before scaling ad spend.",
+    "Set and clearly communicate cut-off dates for guaranteed holiday delivery.",
+    "Provide proactive shipping updates via SMS/email during high-volume periods."
+  ]
+},
+{
+  company:"Cascade Coffee Roasters",
+  industry:"Food & Beverage",
+  objective:"Grow direct-to-consumer subscription sales for specialty coffee.",
+  audience:"Coffee enthusiasts, 25-45, willing to pay premium prices",
+  channels:["Instagram","Podcast Ads","Content Marketing (Blog)","Email"],
+  budget:{ "Instagram":30,"Podcast":25,"Content":25,"Email":20 },
+  metrics:{reach:"650K", ctr:"1.6%", engagement:"High", conversions:"2.2%", sales:"$31,500"},
+  comments:[
+    "Beautiful branding, but I have no idea what makes this coffee different from what I buy at the store.",
+    "Nice photos but the blog posts don't really explain the sourcing or roasting process.",
+    "Looks premium but I can't tell why it's worth double the price."
+  ],
+  social:"High saves and shares on Instagram for aesthetic reasons, but comments consistently ask clarifying questions about sourcing, freshness, and roast process that go unanswered.",
+  mistake:"The campaign emphasized aesthetic branding over substantive product differentiation, failing to justify the premium price point to potential subscribers.",
+  clues:[
+    "Engagement (likes/saves) is high but conversions lag behind for a premium-priced product.",
+    "Comments repeatedly ask 'why' questions about value and differentiation, unanswered by the content.",
+    "Content marketing blog posts focus on lifestyle imagery rather than product education."
+  ],
+  explanation:"The brand built an appealing aesthetic and community-style engagement, but never actually communicated the specific value proposition that would justify a premium subscription price, leaving interested browsers without a reason to convert.",
+  improvements:[
+    "Add clear educational content about sourcing, roasting, and freshness guarantees.",
+    "Include a value-comparison callout (e.g., cost-per-cup vs. cafe pricing) in ads.",
+    "Use customer testimonials that speak directly to taste and quality differences."
+  ]
+},
+{
+  company:"TrailBlaze Bicycles",
+  industry:"Sporting Goods",
+  objective:"Launch an e-bike model targeting commuters in major cities.",
+  audience:"Urban commuters, 25-50, environmentally conscious",
+  channels:["LinkedIn Ads","Local Transit Ads","Google Search","Email"],
+  budget:{ "LinkedIn":20,"Transit":40,"Search":25,"Email":15 },
+  metrics:{reach:"420K", ctr:"1.4%", engagement:"Low", conversions:"0.9%", sales:"$46,000"},
+  comments:[
+    "Saw this on my commute train, but the ad had zero pricing info so I just kept scrolling.",
+    "Cool bike, no idea what it costs, won't bother looking it up.",
+    "Ad looked professional but told me nothing beyond 'ride green'."
+  ],
+  social:"Transit ad impressions were high (commuters see them daily) but click-through to the website was minimal, and those who did click bounced quickly citing lack of concrete information.",
+  mistake:"Ads emphasized vague lifestyle messaging without including pricing, range, or specs, failing to give commuters a concrete reason to seek more information.",
+  clues:[
+    "Engagement is unusually low for a visually strong product category (e-bikes).",
+    "Comments repeatedly mention lack of pricing or specification information in the ad.",
+    "The creative brief for transit ads focused solely on brand lifestyle imagery, no product specs."
+  ],
+  explanation:"Transit ads reached the right commuter audience repeatedly, but vague, spec-free messaging gave viewers no concrete reason to act, resulting in low engagement and click-through despite strong impressions.",
+  improvements:[
+    "Include starting price, range, and key specs directly in transit ad creative.",
+    "Add a QR code linking to a simple, fast-loading spec/pricing page.",
+    "Test comparison-style messaging (e.g., cost savings vs. car commuting) to add concrete value."
+  ]
+}
+];
+
+// ============ HELPERS ============
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function metricPct(str){
+  // rough visual pct based on percentage-like strings, fallback random-stable
+  const m = String(str).match(/([\d.]+)%/);
+  if(m) return Math.min(100, parseFloat(m[1])*15);
+  return 55;
+}
+
+// ============ APP ============
+const { useState, useEffect, useRef } = React;
+
+function ProgressBar({step}){
+  const steps=["Assigned","Board","Investigate","Solve","Closed","Report"];
+  return (
+    <div className="progress-bar-wrap">
+      {steps.map((s,i)=>(
+        <React.Fragment key={s}>
+          <div className={"progress-step "+(i===step?"active":i<step?"done":"")}>
+            <div className="progress-dot"></div>{s}
+          </div>
+          {i<steps.length-1 && <div className="progress-line"></div>}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function Landing({onStart}){
+  return (
+    <div className="landing fade-in">
+      <div className="badge">🕵️</div>
+      <h1 className="glow">MARKETING DETECTIVE</h1>
+      <div className="sub">A case file lands on your desk. Somewhere inside these numbers, comments, and charts hides one costly mistake. Pin the evidence to the board. Follow the clues. Crack the case.</div>
+      <div className="case-count">{CASES.length} Cases in the Archive</div>
+      <button className="btn" onClick={onStart}>Open New Case File</button>
+    </div>
+  );
+}
+
+function CaseAssignment({caseData, onProceed}){
+  return (
+    <div className="assignment-wrap fade-in">
+      <div className="folder">
+        <div className="stamp">Confidential</div>
+        <h2>{caseData.company}</h2>
+        <div className="meta">Industry: {caseData.industry}</div>
+        <div className="brief">
+          <strong>Campaign Objective:</strong> {caseData.objective}<br/><br/>
+          <strong>Target Audience:</strong> {caseData.audience}<br/><br/>
+          A campaign was launched. Something went wrong. Your job: investigate the evidence board, uncover the primary marketing mistake, and present your case.
+        </div>
+      </div>
+      <div style={{marginTop:'30px'}}>
+        <button className="btn" onClick={onProceed}>Enter Investigation Room →</button>
+      </div>
+    </div>
+  );
+}
+
+function Note({title, tag, children, rot, className, onClick, draggableId, onDragStart, onDragEnd, dragging}){
+  return (
+    <div
+      className={"note "+(className||"")+(dragging?" dragging":"")}
+      style={{"--rot":(rot||"-1deg")}}
+      draggable={!!draggableId}
+      onDragStart={draggableId?(e)=>onDragStart(e,draggableId):undefined}
+      onDragEnd={onDragEnd}
+      onClick={onClick}
+    >
+      <div className="pin"></div>
+      {tag && <div className="tag">{tag}</div>}
+      <h4>{title}</h4>
+      {children}
+    </div>
+  );
+}
+
+function InvestigationBoard({caseData, onProceed}){
+  const [dropped,setDropped]=useState([]);
+  const [overZone,setOverZone]=useState(false);
+  const [draggingId,setDraggingId]=useState(null);
+  const [barsGrown,setBarsGrown]=useState(false);
+
+  useEffect(()=>{ const t=setTimeout(()=>setBarsGrown(true),200); return ()=>clearTimeout(t); },[]);
+
+  const evidenceItems = [
+    {id:"metrics", title:"Campaign Metrics", type:"chart"},
+    {id:"budget", title:"Budget Allocation", type:"chart"},
+    {id:"channels", title:"Marketing Channels", type:"folder"},
+    {id:"comments", title:"Customer Comments", type:"paper"},
+    {id:"social", title:"Social Media Performance", type:"paper"},
+  ];
+
+  function onDragStart(e,id){ setDraggingId(id); e.dataTransfer.effectAllowed="move"; }
+  function onDragEnd(){ setDraggingId(null); setOverZone(false); }
+  function onDrop(e){
+    e.preventDefault();
+    if(draggingId && !dropped.includes(draggingId)){
+      setDropped([...dropped, draggingId]);
+    }
+    setOverZone(false);
+    setDraggingId(null);
+  }
+
+  const allPinned = dropped.length===evidenceItems.length;
+
+  return (
+    <div className="board-wrap fade-in">
+      <div className="board-header">
+        <h2>🔎 Investigation Board — {caseData.company}</h2>
+        <div className="small-muted">Drag each piece of evidence into the case file below</div>
+      </div>
+
+      <div className="corkboard">
+        <div className="evidence-grid">
+          {evidenceItems.filter(it=>!dropped.includes(it.id)).map((it,idx)=>(
+            <Note
+              key={it.id}
+              title={it.title}
+              tag={"Exhibit "+(idx+1)}
+              rot={(idx%2===0?"-2deg":"2deg")}
+              className={it.type==="chart"?"chart-type":it.type==="folder"?"folder-type":""}
+              draggableId={it.id}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              dragging={draggingId===it.id}
+            >
+              {it.id==="metrics" && (
+                <div>
+                  {Object.entries(caseData.metrics).map(([k,v])=>(
+                    <div key={k}>
+                      <div className="metric-row"><span style={{textTransform:'capitalize'}}>{k}</span><span>{v}</span></div>
+                      <div className="metric-bar-bg"><div className="metric-bar-fill" style={{width:(barsGrown?metricPct(v):0)+"%"}}></div></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {it.id==="budget" && (
+                <div>
+                  {Object.entries(caseData.budget).map(([k,v])=>(
+                    <div key={k}>
+                      <div className="metric-row"><span>{k}</span><span>{v}%</span></div>
+                      <div className="metric-bar-bg"><div className="metric-bar-fill" style={{width:(barsGrown?v:0)+"%"}}></div></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {it.id==="channels" && (
+                <div>{caseData.channels.map(c=>(<div key={c} className="metric-row"><span>📌 {c}</span></div>))}</div>
+              )}
+              {it.id==="comments" && (
+                <div>{caseData.comments.map((c,i)=>(<div key={i} className="comment-bubble">"{c}"</div>))}</div>
+              )}
+              {it.id==="social" && (<div>{caseData.social}</div>)}
+            </Note>
+          ))}
+        </div>
+      </div>
+
+      <div
+        className={"zone"+(overZone?" over":"")}
+        onDragOver={(e)=>{e.preventDefault(); setOverZone(true);}}
+        onDragLeave={()=>setOverZone(false)}
+        onDrop={onDrop}
+      >
+        <h3>📁 Case File (drop evidence here)</h3>
+        {dropped.length===0 && <div className="hint">Nothing pinned yet. Drag evidence from the corkboard above.</div>}
+        <div className="dropped-list">
+          {dropped.map(id=>{
+            const it = evidenceItems.find(e=>e.id===id);
+            return <div key={id} style={{color:'var(--accent2)', fontSize:'13px', background:'rgba(16,185,129,0.12)', padding:'6px 12px', borderRadius:'20px', border:'1px solid rgba(16,185,129,0.4)'}}>✔ {it.title}</div>;
+          })}
+        </div>
+      </div>
+
+      <div style={{textAlign:'center', margin:'20px 0 40px'}}>
+        <button className="btn" disabled={!allPinned} onClick={onProceed}>
+          {allPinned ? "All Evidence Filed — Proceed to Solve →" : `Pin all evidence to continue (${dropped.length}/${evidenceItems.length})`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SolveCase({caseData, onSolved}){
+  // Build suspect options: correct mistake + 3 decoys pulled from other cases
+  const [options] = useState(()=>{
+    const decoys = shuffle(CASES.filter(c=>c.company!==caseData.company)).slice(0,3).map(c=>c.mistake);
+    return shuffle([caseData.mistake, ...decoys]);
+  });
+  const [selected,setSelected]=useState(null);
+  const [revealedClue,setRevealedClue]=useState(0);
+
+  return (
+    <div className="solve-wrap fade-in">
+      <h2 style={{color:'var(--accent2)'}}>🧩 Name the Marketing Mistake</h2>
+      <p className="small-muted">Review the supporting clues, then choose the explanation that fits the evidence.</p>
+
+      <div style={{margin:'20px 0'}}>
+        {caseData.clues.map((c,i)=>(
+          <div
+            key={i}
+            className="note flip"
+            style={{"--rot": (i%2?"1deg":"-1deg"), marginBottom:'14px', display: i<=revealedClue?'block':'none'}}
+            onClick={()=> i===revealedClue && setRevealedClue(revealedClue+1)}
+          >
+            <div className="pin"></div>
+            <h4>Clue #{i+1}</h4>
+            <div>{c}</div>
+          </div>
+        ))}
+        {revealedClue < caseData.clues.length && (
+          <div className="small-muted" style={{cursor:'pointer'}} onClick={()=>setRevealedClue(revealedClue+1)}>▸ Reveal next clue</div>
+        )}
+      </div>
+
+      <h3 style={{color:'var(--text)'}}>Suspect List — Choose the correct explanation:</h3>
+      {options.map((opt,i)=>(
+        <div key={i} className={"suspect-card"+(selected===opt?" selected":"")} onClick={()=>setSelected(opt)}>
+          <div className="num">{i+1}</div>
+          {opt}
+        </div>
+      ))}
+
+      <div style={{textAlign:'center', marginTop:'26px'}}>
+        <button className="btn" disabled={!selected} onClick={()=>onSolved(selected===caseData.mistake, selected)}>Submit Verdict</button>
+      </div>
+    </div>
+  );
+}
+
+function CaseClosed({correct, onContinue}){
+  return (
+    <div className="closed-wrap fade-in">
+      <div className="stamp-big">{correct ? "Case Closed" : "Case Reopened"}</div>
+      <div className={"result-msg "+(correct?"right":"wrong")}>
+        {correct ? "Sharp eyes, detective. You identified the real culprit behind the campaign's failure." : "Not quite — the evidence points elsewhere. Every great detective misreads a clue once."}
+      </div>
+      <button className="btn" onClick={onContinue}>View Learning Report →</button>
+    </div>
+  );
+}
+
+function LearningReport({caseData, correct, onNewCase}){
+  return (
+    <div className="report-wrap fade-in">
+      <h2 style={{textAlign:'center', color:'var(--accent2)'}}>📖 Learning Report</h2>
+      <div className="report-card">
+        <h3>✅ The Real Explanation</h3>
+        <p>{caseData.explanation}</p>
+      </div>
+      <div className="report-card">
+        <h3>🔍 Clues Reviewed</h3>
+        {caseData.clues.map((c,i)=>(
+          <div key={i} className="clue-item"><span className="clue-num">{i+1}.</span><span>{c}</span></div>
+        ))}
+      </div>
+      <div className="report-card">
+        <h3>🛠 Suggested Improvements</h3>
+        <ul>{caseData.improvements.map((imp,i)=>(<li key={i}>{imp}</li>))}</ul>
+      </div>
+      <div style={{textAlign:'center', marginTop:'20px'}}>
+        <button className="btn" onClick={onNewCase}>Investigate a New Case →</button>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [screen,setScreen]=useState("landing"); // landing, assign, board, solve, closed, report
+  const [caseData,setCaseData]=useState(null);
+  const [correct,setCorrect]=useState(false);
+
+  const stepIndex = {landing:0, assign:0, board:1, solve:3, closed:4, report:5}[screen] ?? 0;
+
+  function startNewCase(){
+    setCaseData(pick(CASES));
+    setScreen("assign");
+  }
+
+  return (
+    <div>
+      <div className="top-nav">
+        <div className="brand">🕵️ Marketing Detective</div>
+        {screen!=="landing" && <div className="small-muted">Case: {caseData?.company}</div>}
+      </div>
+      {screen!=="landing" && <ProgressBar step={stepIndex} />}
+
+      {screen==="landing" && <Landing onStart={startNewCase} />}
+      {screen==="assign" && <CaseAssignment caseData={caseData} onProceed={()=>setScreen("board")} />}
+      {screen==="board" && <InvestigationBoard caseData={caseData} onProceed={()=>setScreen("solve")} />}
+      {screen==="solve" && <SolveCase caseData={caseData} onSolved={(isCorrect)=>{setCorrect(isCorrect); setScreen("closed");}} />}
+      {screen==="closed" && <CaseClosed correct={correct} onContinue={()=>setScreen("report")} />}
+      {screen==="report" && <LearningReport caseData={caseData} correct={correct} onNewCase={startNewCase} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script>
+</body>
+</html>
