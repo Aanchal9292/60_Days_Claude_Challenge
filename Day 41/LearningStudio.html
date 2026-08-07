@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Learning Studio · JS Essentials</title>
+    <style>
+        /* ----- global reset & variables ----- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            --bg-primary: #0b0e14;
+            --bg-secondary: #141a24;
+            --bg-card: #1c2432;
+            --bg-card-hover: #263040;
+            --border-subtle: #2a3444;
+            --text-primary: #e8edf5;
+            --text-secondary: #9aaec9;
+            --text-muted: #5f748f;
+            --accent: #6c8cff;
+            --accent-glow: rgba(108, 140, 255, 0.25);
+            --accent-gradient: linear-gradient(135deg, #6c8cff, #a78bfa);
+            --green: #4ade80;
+            --red: #f87171;
+            --gold: #fbbf24;
+            --radius: 16px;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0 20px 40px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+        /* fallback system fonts if Inter not loaded */
+        @supports (font-variation-settings: normal) {
+            body {
+                font-family: 'Inter var', system-ui, sans-serif;
+            }
+        }
+
+        /* ----- scrollbar ----- */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ----- app container ----- */
+        #app {
+            max-width: 1200px;
+            width: 100%;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 28px 40px;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        /* ----- header ----- */
+        .app-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 28px;
+            gap: 16px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .logo-text {
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: -0.3px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-text span {
+            font-weight: 400;
+            -webkit-text-fill-color: var(--text-secondary);
+            font-size: 18px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .progress-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .progress-summary .badge {
+            background: var(--bg-card);
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: 1px solid var(--border-subtle);
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .progress-bar-track {
+            width: 140px;
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-subtle);
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-gradient);
+            border-radius: 8px;
+            transition: width 0.6s ease;
+        }
+        .dark-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .dark-toggle:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+        .print-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .print-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        /* ----- module tabs / nav ----- */
+        .module-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 32px;
+            background: var(--bg-secondary);
+            padding: 6px;
+            border-radius: 60px;
+            border: 1px solid var(--border-subtle);
+        }
+        .module-nav button {
+            flex: 1;
+            min-width: 80px;
+            background: transparent;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+        }
+        .module-nav button:hover:not(:disabled) {
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+        .module-nav button.active {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .module-nav button.active .nav-icon {
+            filter: brightness(0) invert(1);
+        }
+        .module-nav button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .module-nav button .nav-icon {
+            font-size: 16px;
+        }
+        .module-nav button .lock-icon {
+            font-size: 12px;
+            margin-left: 4px;
+        }
+        .module-nav button .check-mark {
+            color: var(--green);
+            font-size: 14px;
+        }
+
+        /* ----- content sections ----- */
+        .section {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeSlide {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 24px;
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+        }
+        .card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition);
+        }
+        .card:hover {
+            border-color: var(--text-muted);
+        }
+        .card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h3 .badge-icon {
+            background: var(--accent);
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        .card p,
+        .card li {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        .card strong {
+            color: var(--text-primary);
+        }
+        .card ul,
+        .card ol {
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+        .card li {
+            margin-bottom: 4px;
+        }
+        .code-block {
+            background: #0d1117;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid var(--border-subtle);
+            color: #e6edf3;
+            position: relative;
+        }
+        .code-block .comment {
+            color: #8b949e;
+        }
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+        .code-block .string {
+            color: #a5d6ff;
+        }
+        .code-block .func {
+            color: #d2a8ff;
+        }
+        .code-block .number {
+            color: #79c0ff;
+        }
+        .inline-code {
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: var(--accent);
+            border: 1px solid var(--border-subtle);
+        }
+        .analogy-box {
+            background: var(--bg-card);
+            border-left: 4px solid var(--gold);
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .analogy-box strong {
+            color: var(--gold);
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 16px 0;
+        }
+        .comparison-grid .col {
+            background: var(--bg-card);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+        .comparison-grid .col h4 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .comparison-grid .col ul {
+            padding-left: 18px;
+        }
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .interactive-demo {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            border: 1px solid var(--border-subtle);
+        }
+        .interactive-demo .demo-output {
+            background: #0d1117;
+            padding: 12px 16px;
+            border-radius: 8px;
+            min-height: 40px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 12px;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+        .interactive-demo .demo-output .success {
+            color: var(--green);
+        }
+        .interactive-demo .demo-output .error {
+            color: var(--red);
+        }
+        .btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover:not(:disabled) {
+            background: var(--bg-card-hover);
+            border-color: var(--text-muted);
+        }
+        .btn-primary {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-success {
+            background: var(--green);
+            color: #0b0e14;
+            border-color: var(--green);
+        }
+        .btn-success:hover {
+            background: #34d399;
+        }
+        .btn-danger {
+            background: var(--red);
+            color: #fff;
+            border-color: var(--red);
+        }
+
+        /* ----- quiz styles ----- */
+        .quiz-container {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid var(--border-subtle);
+        }
+        .quiz-question {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-subtle);
+        }
+        .quiz-question .q-text {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .quiz-options label {
+            display: block;
+            padding: 8px 14px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+        .quiz-options label:hover {
+            border-color: var(--text-muted);
+        }
+        .quiz-options input[type="radio"] {
+            margin-right: 12px;
+            accent-color: var(--accent);
+        }
+        .quiz-options label.correct {
+            border-color: var(--green);
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .quiz-options label.wrong {
+            border-color: var(--red);
+            background: rgba(248, 113, 113, 0.1);
+        }
+        .quiz-options label.disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+        .quiz-feedback {
+            margin-top: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        .quiz-feedback.show {
+            display: block;
+        }
+        .quiz-feedback.correct {
+            background: rgba(74, 222, 128, 0.12);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+        .quiz-feedback.wrong {
+            background: rgba(248, 113, 113, 0.12);
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+        .quiz-summary {
+            background: var(--bg-card);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-top: 16px;
+            border: 1px solid var(--border-subtle);
+            display: none;
+        }
+        .quiz-summary.show {
+            display: block;
+        }
+        .quiz-summary .score-big {
+            font-size: 32px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ----- progress unlock ----- */
+        .unlock-message {
+            text-align: center;
+            padding: 24px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px dashed var(--accent);
+            margin: 20px 0;
+        }
+        .unlock-message .big-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* ----- conclusion / final challenge ----- */
+        .challenge-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 2px solid var(--gold);
+            margin: 16px 0;
+        }
+        .cheat-sheet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .cheat-sheet-grid .item {
+            background: var(--bg-card);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+        }
+        .cheat-sheet-grid .item .term {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .cheat-sheet-grid .item .def {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* ----- svg diagram ----- */
+        .diagram-svg {
+            width: 100%;
+            max-width: 500px;
+            margin: 16px auto;
+            display: block;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+        .diagram-svg svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* ----- responsive ----- */
+        @media (max-width: 768px) {
+            #app {
+                padding: 16px;
+            }
+            .app-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .logo-area {
+                justify-content: center;
+            }
+            .header-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .module-nav {
+                border-radius: 16px;
+                flex-wrap: wrap;
+                gap: 4px;
+                padding: 4px;
+            }
+            .module-nav button {
+                font-size: 12px;
+                padding: 8px 10px;
+                min-width: 60px;
+                flex: 1 0 auto;
+            }
+            .card {
+                padding: 18px;
+            }
+            .section-title {
+                font-size: 22px;
+            }
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .cheat-sheet-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .cheat-sheet-grid {
+                grid-template-columns: 1fr;
+            }
+            .module-nav button {
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+            .progress-bar-track {
+                width: 80px;
+            }
+        }
+
+        /* ----- print styles ----- */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #111 !important;
+                padding: 0 !important;
+            }
+            #app {
+                box-shadow: none !important;
+                background: #fff !important;
+                padding: 20px !important;
+            }
+            .module-nav,
+            .header-actions .print-btn,
+            .header-actions .dark-toggle,
+            .btn,
+            .quiz-container .btn {
+                display: none !important;
+            }
+            .card {
+                background: #f5f5f5 !important;
+                border-color: #ccc !important;
+                color: #111 !important;
+            }
+            .code-block {
+                background: #f0f0f0 !important;
+                color: #111 !important;
+            }
+            .section {
+                display: block !important;
+            }
+            .section:not(.active) {
+                display: block !important;
+            }
+            .quiz-options label.correct {
+                background: #d4edda !important;
+            }
+            .quiz-options label.wrong {
+                background: #f8d7da !important;
+            }
+            .quiz-feedback {
+                display: block !important;
+            }
+        }
+
+        /* misc */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .text-sm {
+            font-size: 14px;
+        }
+        .text-gold {
+            color: var(--gold);
+        }
+        .border-t {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .reward-star {
+            color: var(--gold);
+            font-size: 20px;
+        }
+        .reward-star.dim {
+            opacity: 0.2;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">JS</div>
+                <div class="logo-text">Studio <span>· Essentials</span></div>
+            </div>
+            <div class="header-actions">
+                <div class="progress-summary">
+                    <span class="badge" id="progressLabel">0%</span>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+                    </div>
+                </div>
+                <button class="print-btn" onclick="window.print()" title="Print notes">🖨️ Print</button>
+                <button class="dark-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
+            </div>
+        </header>
+
+        <!-- module nav -->
+        <nav class="module-nav" id="moduleNav">
+            <button class="active" data-module="0" id="navIntro">🏠 Intro</button>
+            <button data-module="1" id="navMod1">📦 1. Foundations</button>
+            <button data-module="2" id="navMod2" disabled>⚙️ 2. Functions</button>
+            <button data-module="3" id="navMod3" disabled>🖱️ 3. DOM & Events</button>
+            <button data-module="4" id="navMod4" disabled>🚀 4. Async & Fetch</button>
+            <button data-module="5" id="navMod5" disabled>🏆 Final</button>
+        </nav>
+
+        <!-- ====== SECTIONS ====== -->
+
+        <!-- INTRO -->
+        <section class="section active" id="section0">
+            <h1 class="section-title">🚀 JavaScript Essentials for Web</h1>
+            <div class="section-subtitle">Master variables, functions, DOM, events, and fetching data — all in one tutorial.</div>
+
+            <div class="card">
+                <h3>📌 Learning Objectives</h3>
+                <ul>
+                    <li><strong>Understand</strong> variables, data types, and type coercion.</li>
+                    <li><strong>Write</strong> functions with parameters, return values, and arrow syntax.</li>
+                    <li><strong>Manipulate</strong> the DOM: select, update, create, and remove elements.</li>
+                    <li><strong>Handle</strong> events with listeners, event objects, and delegation.</li>
+                    <li><strong>Fetch</strong> data asynchronously using Promises and <span class="inline-code">async/await</span>.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>⏱️ Estimated time</h3>
+                <p><strong>~90 minutes</strong> — 4 modules + final challenge. Take breaks as needed.</p>
+            </div>
+
+            <div class="card">
+                <h3>📖 Prerequisites</h3>
+                <ul>
+                    <li>Basic familiarity with HTML (tags, attributes).</li>
+                    <li>No prior JavaScript experience needed — we start from the ground up.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Expected outcomes</h3>
+                <ul>
+                    <li>You'll build an interactive web app that fetches and displays live data.</li>
+                    <li>You'll earn ⭐ <strong>Stars</strong> for completing each module quiz.</li>
+                    <li>You'll walk away with a <strong>cheat sheet</strong> and resources for continued growth.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🏅 Reward System</h3>
+                <p>Earn <span class="reward-star">⭐</span> for each module quiz passed (≥ 3/4 correct). Collect all 4 stars to unlock the final challenge! Your progress is tracked in the top bar.</p>
+                <div style="display:flex;gap:12px;margin-top:12px;font-size:22px;">
+                    <span class="reward-star" id="star0">⭐</span>
+                    <span class="reward-star" id="star1">⭐</span>
+                    <span class="reward-star" id="star2">⭐</span>
+                    <span class="reward-star" id="star3">⭐</span>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:28px;">
+                <button class="btn btn-primary" onclick="goToModule(1)">Start Learning →</button>
+            </div>
+        </section>
+
+        <!-- MODULE 1: FOUNDATIONS -->
+        <section class="section" id="section1">
+            <h2 class="section-title">📦 Module 1: Foundations — Variables, Data Types & Operations</h2>
+            <div class="section-subtitle">Building blocks of every JavaScript program.</div>
+
+            <div class="card">
+                <h3>🧠 Variables: <span class="inline-code">let</span>, <span class="inline-code">const</span>, and <span class="inline-code">var</span></h3>
+                <p>Variables are containers for values. Use <span class="inline-code">let</span> for values that change, <span class="inline-code">const</span> for values that don't, and avoid <span class="inline-code">var</span> (legacy).</p>
+                <div class="code-block">
+                    <span class="keyword">let</span> age = 25;          <span class="comment">// can be reassigned</span>
+                    <span class="keyword">const</span> birthYear = 1998;  <span class="comment">// cannot be reassigned</span>
+                    <span class="keyword">var</span> old = <span class="string">"deprecated"</span>; <span class="comment">// avoid</span>
+                </div>
+                <div class="analogy-box">
+                    <strong>💡 Analogy:</strong> Variables are like labeled boxes. <span class="inline-code">let</span> lets you swap contents, <span class="inline-code">const</span> is a sealed box — you can't change what's inside, but you can modify the object itself (more on that later).
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔢 Primitive Data Types</h3>
+                <ul>
+                    <li><span class="inline-code">string</span> — text: <span class="inline-code">"hello"</span></li>
+                    <li><span class="inline-code">number</span> — integers & floats: <span class="inline-code">42</span>, <span class="inline-code">3.14</span></li>
+                    <li><span class="inline-code">boolean</span> — <span class="inline-code">true</span> / <span class="inline-code">false</span></li>
+                    <li><span class="inline-code">undefined</span> — declared but not assigned</li>
+                    <li><span class="inline-code">null</span> — intentional empty value</li>
+                    <li><span class="inline-code">symbol</span> — unique identifier (advanced)</li>
+                </ul>
+                <p>Use <span class="inline-code">typeof</span> to check a value's type.</p>
+                <div class="code-block">
+                    <span class="keyword">typeof</span> <span class="string">"hello"</span>;  <span class="comment">// "string"</span>
+                    <span class="keyword">typeof</span> 42;           <span class="comment">// "number"</span>
+                </div>
+                <div class="comparison-grid">
+                    <div class="col"><h4>✅ Number</h4><ul><li>Integers: 1, 100</li><li>Floats: 3.14, 0.5</li><li>NaN (not-a-number) is also a number!</li></ul></div>
+                    <div class="col"><h4>✅ String</h4><ul><li>Single quotes: 'hi'</li><li>Double quotes: "hi"</li><li>Backticks: `hi ${name}`</li></ul></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚡ Operators & Type Coercion</h3>
+                <p>JavaScript is loosely typed, which means it automatically converts types when needed — this is <strong>coercion</strong>.</p>
+                <div class="code-block">
+                    <span class="string">"5"</span> + 2;    <span class="comment">// "52" (string concatenation)</span>
+                    <span class="string">"5"</span> - 2;    <span class="comment">// 3   (coerced to number)</span>
+                    5 + <span class="keyword">true</span>;      <span class="comment">// 6   (true → 1)</span>
+                </div>
+                <p>Be careful! Use <span class="inline-code">===</span> (strict equality) to avoid unexpected coercion.</p>
+                <div class="comparison-grid">
+                    <div class="col"><h4>== (loose)</h4><ul><li><span class="inline-code">5 == "5"</span> → true</li><li><span class="inline-code">0 == false</span> → true</li></ul></div>
+                    <div class="col"><h4>=== (strict)</h4><ul><li><span class="inline-code">5 === "5"</span> → false</li><li><span class="inline-code">0 === false</span> → false</li></ul></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Practical Exercise: Temperature Checker</h3>
+                <p>Enter a temperature in Celsius and click convert. The script will convert to Fahrenheit and display the result.</p>
+                <div class="interactive-demo">
+                    <label style="display:block;margin-bottom:8px;font-weight:500;">🌡️ Celsius: <input type="number" id="tempInput" value="25" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:8px;padding:6px 12px;width:100px;"></label>
+                    <button class="btn btn-primary" id="convertTempBtn">Convert →</button>
+                    <div class="demo-output" id="tempOutput">Click to see result.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚠️ Common Misconception</h3>
+                <p><strong>"JavaScript is a compiled language."</strong> — No, it's interpreted (or JIT-compiled). Variables are hoisted, but <span class="inline-code">let</span> and <span class="inline-code">const</span> are in a "temporal dead zone" until declaration.</p>
+            </div>
+
+            <div class="card">
+                <h3>🔑 Key Takeaways</h3>
+                <ul>
+                    <li>Use <span class="inline-code">const</span> by default, <span class="inline-code">let</span> when reassigning.</li>
+                    <li>JavaScript has 7 primitive types (string, number, boolean, undefined, null, symbol, bigint).</li>
+                    <li>Coercion can be tricky — use <span class="inline-code">===</span> for safety.</li>
+                </ul>
+            </div>
+
+            <!-- QUIZ 1 -->
+            <div class="quiz-container" id="quiz1">
+                <h3>📝 Module 1 Quiz — Foundations</h3>
+                <p style="color:var(--text-secondary);margin-bottom:16px;">Answer 4 questions. You need at least 3 correct to earn ⭐ and unlock the next module.</p>
+                <div id="quiz1Questions"></div>
+                <button class="btn btn-primary" id="submitQuiz1">Submit Quiz</button>
+                <div class="quiz-summary" id="quiz1Summary"></div>
+            </div>
+        </section>
+
+        <!-- MODULE 2: FUNCTIONS -->
+        <section class="section" id="section2">
+            <h2 class="section-title">⚙️ Module 2: Functions & Control Flow</h2>
+            <div class="section-subtitle">Reusable logic and decision-making.</div>
+
+            <div class="card">
+                <h3>🧩 Function Declarations & Expressions</h3>
+                <p>Functions are reusable blocks of code. They can take parameters and return values.</p>
+                <div class="code-block">
+                    <span class="comment">// Declaration (hoisted)</span>
+                    <span class="keyword">function</span> <span class="func">greet</span>(name) {
+                    <span class="keyword">return</span> <span class="string">"Hello, "</span> + name;
+                    }
+
+                    <span class="comment">// Expression (not hoisted)</span>
+                    <span class="keyword">const</span> greet2 = <span class="keyword">function</span>(name) {
+                    <span class="keyword">return</span> <span class="string">"Hi, "</span> + name;
+                    };
+
+                    <span class="comment">// Arrow function (ES6+)</span>
+                    <span class="keyword">const</span> greet3 = (name) => <span class="string">`Hey, ${name}`</span>;
+                </div>
+                <div class="analogy-box">
+                    <strong>💡 Analogy:</strong> Functions are like recipes. You give them ingredients (parameters), follow steps, and get a dish (return value).
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔁 Control Flow: Conditionals & Loops</h3>
+                <p><span class="inline-code">if</span>, <span class="inline-code">else if</span>, <span class="inline-code">else</span>, <span class="inline-code">switch</span>, and loops (<span class="inline-code">for</span>, <span class="inline-code">while</span>).</p>
+                <div class="code-block">
+                    <span class="keyword">if</span> (score >= 90) {
+                    grade = <span class="string">"A"</span>;
+                    } <span class="keyword">else if</span> (score >= 80) {
+                    grade = <span class="string">"B"</span>;
+                    } <span class="keyword">else</span> {
+                    grade = <span class="string">"C"</span>;
+                    }
+
+                    <span class="keyword">for</span> (<span class="keyword">let</span> i = 0; i < 5; i++) {
+                    <span class="built">console</span>.log(i); <span class="comment">// 0,1,2,3,4</span>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📦 Scope & Hoisting</h3>
+                <ul>
+                    <li><strong>Global scope</strong> — accessible everywhere.</li>
+                    <li><strong>Function scope</strong> — variables declared inside a function are local.</li>
+                    <li><strong>Block scope</strong> — <span class="inline-code">let</span> and <span class="inline-code">const</span> are block-scoped (<span class="inline-code">{ }</span>).</li>
+                    <li><strong>Hoisting</strong> — declarations are moved to the top (but not initializations).</li>
+                </ul>
+                <div class="code-block">
+                    <span class="built">console</span>.log(x); <span class="comment">// undefined (hoisted, but not initialized)</span>
+                    <span class="keyword">var</span> x = 5;
+
+                    <span class="built">console</span>.log(y); <span class="comment">// ReferenceError (TDZ)</span>
+                    <span class="keyword">let</span> y = 10;
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Practical Exercise: Grade Calculator</h3>
+                <p>Enter a score (0–100) and click to get the letter grade and a message.</p>
+                <div class="interactive-demo">
+                    <label style="display:block;margin-bottom:8px;font-weight:500;">📊 Score: <input type="number" id="scoreInput" value="85" min="0" max="100" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:8px;padding:6px 12px;width:100px;"></label>
+                    <button class="btn btn-primary" id="gradeBtn">Get Grade</button>
+                    <div class="demo-output" id="gradeOutput">Enter a score and click.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚠️ Common Misconception</h3>
+                <p><strong>"Arrow functions are just shorter syntax."</strong> — They also don't have their own <span class="inline-code">this</span> binding, which makes them ideal for callbacks but not for methods that need <span class="inline-code">this</span>.</p>
+            </div>
+
+            <div class="card">
+                <h3>🔑 Key Takeaways</h3>
+                <ul>
+                    <li>Functions encapsulate logic; use arrow functions for brevity.</li>
+                    <li>Control flow guides execution based on conditions.</li>
+                    <li>Scope determines where variables are accessible.</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container" id="quiz2">
+                <h3>📝 Module 2 Quiz — Functions & Control</h3>
+                <div id="quiz2Questions"></div>
+                <button class="btn btn-primary" id="submitQuiz2">Submit Quiz</button>
+                <div class="quiz-summary" id="quiz2Summary"></div>
+            </div>
+        </section>
+
+        <!-- MODULE 3: DOM & EVENTS -->
+        <section class="section" id="section3">
+            <h2 class="section-title">🖱️ Module 3: DOM Manipulation & Events</h2>
+            <div class="section-subtitle">Make web pages interactive.</div>
+
+            <div class="card">
+                <h3>🌳 The DOM Tree</h3>
+                <p>The Document Object Model is a tree representation of your HTML. JavaScript can traverse and modify it.</p>
+                <svg viewBox="0 0 400 180" class="diagram-svg" style="max-width:400px;">
+                    <rect x="180" y="10" width="40" height="30" rx="6" fill="#6c8cff" />
+                    <text x="200" y="30" fill="#fff" font-size="12" text-anchor="middle" font-family="sans-serif">html</text>
+                    <line x1="180" y1="40" x2="120" y2="80" stroke="#5f748f" stroke-width="2"/>
+                    <line x1="220" y1="40" x2="280" y2="80" stroke="#5f748f" stroke-width="2"/>
+                    <rect x="80" y="80" width="80" height="30" rx="6" fill="#a78bfa" />
+                    <text x="120" y="100" fill="#fff" font-size="12" text-anchor="middle" font-family="sans-serif">head</text>
+                    <rect x="240" y="80" width="80" height="30" rx="6" fill="#a78bfa" />
+                    <text x="280" y="100" fill="#fff" font-size="12" text-anchor="middle" font-family="sans-serif">body</text>
+                    <line x1="240" y1="110" x2="280" y2="140" stroke="#5f748f" stroke-width="2"/>
+                    <rect x="240" y="140" width="80" height="30" rx="6" fill="#fbbf24" />
+                    <text x="280" y="160" fill="#111" font-size="12" text-anchor="middle" font-family="sans-serif">div</text>
+                </svg>
+                <p style="margin-top:8px;">Use <span class="inline-code">document.querySelector</span>, <span class="inline-code">getElementById</span>, <span class="inline-code">querySelectorAll</span> to select nodes.</p>
+            </div>
+
+            <div class="card">
+                <h3>✏️ Manipulating Elements</h3>
+                <ul>
+                    <li><span class="inline-code">element.textContent</span> — change text</li>
+                    <li><span class="inline-code">element.innerHTML</span> — change HTML (use cautiously)</li>
+                    <li><span class="inline-code">element.style</span> — change CSS</li>
+                    <li><span class="inline-code">element.classList.add/remove/toggle</span> — manage classes</li>
+                    <li><span class="inline-code">document.createElement</span> & <span class="inline-code">appendChild</span> — add new elements</li>
+                </ul>
+                <div class="code-block">
+                    <span class="keyword">const</span> title = <span class="built">document</span>.querySelector(<span class="string">'h1'</span>);
+                    title.textContent = <span class="string">"New Title"</span>;
+                    title.classList.add(<span class="string">"highlight"</span>);
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🖱️ Events & Listeners</h3>
+                <p>Events are signals that something happened. Use <span class="inline-code">addEventListener</span> to react.</p>
+                <div class="code-block">
+                    <span class="keyword">const</span> btn = <span class="built">document</span>.querySelector(<span class="string">'#myBtn'</span>);
+                    btn.addEventListener(<span class="string">'click'</span>, (event) => {
+                    <span class="built">alert</span>(<span class="string">'Clicked!'</span>);
+                    <span class="built">console</span>.log(event.target); <span class="comment">// the button</span>
+                    });
+                </div>
+                <p><strong>Event delegation:</strong> attach a listener to a parent and use <span class="inline-code">event.target</span> to handle children dynamically.</p>
+                <div class="analogy-box">
+                    <strong>💡 Analogy:</strong> Events are like notifications. You subscribe (add listener) to be notified when something happens (click, keypress, etc.).
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Practical Exercise: Color Changer</h3>
+                <p>Click the buttons below to change the background color of the demo box.</p>
+                <div class="interactive-demo" id="colorDemo" style="background:var(--bg-primary);padding:24px;border-radius:12px;transition:background 0.3s;">
+                    <p style="color:var(--text-secondary);">This box changes color!</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn" data-color="#ef4444">🔴 Red</button>
+                        <button class="btn" data-color="#3b82f6">🔵 Blue</button>
+                        <button class="btn" data-color="#22c55e">🟢 Green</button>
+                        <button class="btn" data-color="#f59e0b">🟡 Gold</button>
+                        <button class="btn" id="resetColorBtn">↺ Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚠️ Common Misconception</h3>
+                <p><strong>"<span class="inline-code">innerHTML</span> is safe to use."</strong> — It can introduce XSS if you insert user-supplied data. Prefer <span class="inline-code">textContent</span> or <span class="inline-code">createElement</span>.</p>
+            </div>
+
+            <div class="card">
+                <h3>🔑 Key Takeaways</h3>
+                <ul>
+                    <li>DOM is a tree; selectors help you navigate it.</li>
+                    <li>You can change content, styles, and structure programmatically.</li>
+                    <li>Events make pages interactive; use delegation for dynamic lists.</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container" id="quiz3">
+                <h3>📝 Module 3 Quiz — DOM & Events</h3>
+                <div id="quiz3Questions"></div>
+                <button class="btn btn-primary" id="submitQuiz3">Submit Quiz</button>
+                <div class="quiz-summary" id="quiz3Summary"></div>
+            </div>
+        </section>
+
+        <!-- MODULE 4: ASYNC & FETCH -->
+        <section class="section" id="section4">
+            <h2 class="section-title">🚀 Module 4: Asynchronous JavaScript & Fetch</h2>
+            <div class="section-subtitle">Handle network requests and timed operations.</div>
+
+            <div class="card">
+                <h3>⏳ Asynchronous Programming</h3>
+                <p>JavaScript is single-threaded but non-blocking. Asynchronous operations (like network requests) run in the background and notify you when done.</p>
+                <div class="analogy-box">
+                    <strong>💡 Analogy:</strong> Async is like ordering food at a restaurant. You don't stand at the counter waiting — you sit, and the server brings it to you when ready.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📞 Promises</h3>
+                <p>A Promise represents a future value. It has three states: pending, fulfilled, rejected.</p>
+                <div class="code-block">
+                    <span class="keyword">const</span> promise = <span class="keyword">new</span> Promise((resolve, reject) => {
+                    <span class="comment">// async work</span>
+                    <span class="keyword">if</span> (success) resolve(<span class="string">"Data"</span>);
+                    <span class="keyword">else</span> reject(<span class="string">"Error"</span>);
+                    });
+
+                    promise
+                    .then(data => <span class="built">console</span>.log(data))
+                    .catch(err => <span class="built">console</span>.error(err));
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚡ async/await (modern)</h3>
+                <p>Syntactic sugar over Promises. Write asynchronous code that looks synchronous.</p>
+                <div class="code-block">
+                    <span class="keyword">async</span> <span class="keyword">function</span> <span class="func">fetchData</span>() {
+                    <span class="keyword">try</span> {
+                    <span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">'https://api.example.com'</span>);
+                    <span class="keyword">const</span> data = <span class="keyword">await</span> response.json();
+                    <span class="built">console</span>.log(data);
+                    } <span class="keyword">catch</span> (err) {
+                    <span class="built">console</span>.error(err);
+                    }
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🌐 Fetch API</h3>
+                <p><span class="inline-code">fetch()</span> makes HTTP requests. It returns a Promise that resolves to a Response object.</p>
+                <ul>
+                    <li><span class="inline-code">response.json()</span> — parse JSON body</li>
+                    <li><span class="inline-code">response.text()</span> — get plain text</li>
+                    <li><span class="inline-code">response.status</span> — HTTP status</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🎯 Practical Exercise: Fetch Users</h3>
+                <p>Click the button to fetch a list of users from <span class="inline-code">jsonplaceholder.typicode.com</span> and display them.</p>
+                <div class="interactive-demo">
+                    <button class="btn btn-primary" id="fetchUsersBtn">👥 Fetch Users</button>
+                    <div class="demo-output" id="usersOutput" style="max-height:200px;overflow-y:auto;">Click to load users.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚠️ Common Misconception</h3>
+                <p><strong>"<span class="inline-code">async/await</span> blocks the main thread."</strong> — No, it allows other tasks to run while waiting. The function is paused, not the whole program.</p>
+            </div>
+
+            <div class="card">
+                <h3>🔑 Key Takeaways</h3>
+                <ul>
+                    <li>Asynchronous operations prevent blocking.</li>
+                    <li>Promises chain with <span class="inline-code">.then()</span> and <span class="inline-code">.catch()</span>.</li>
+                    <li><span class="inline-code">async/await</span> is the most readable way to handle async code.</li>
+                    <li><span class="inline-code">fetch</span> is the modern way to make HTTP requests.</li>
+                </ul>
+            </div>
+
+            <div class="quiz-container" id="quiz4">
+                <h3>📝 Module 4 Quiz — Async & Fetch</h3>
+                <div id="quiz4Questions"></div>
+                <button class="btn btn-primary" id="submitQuiz4">Submit Quiz</button>
+                <div class="quiz-summary" id="quiz4Summary"></div>
+            </div>
+        </section>
+
+        <!-- FINAL / CONCLUSION -->
+        <section class="section" id="section5">
+            <h2 class="section-title">🏆 Final Challenge & Beyond</h2>
+            <div class="section-subtitle">You've completed all modules! Now put it all together.</div>
+
+            <div class="challenge-box">
+                <h3>🎯 Final Practical Challenge: Interactive Dashboard</h3>
+                <p><strong>Task:</strong> Build a mini dashboard that:</p>
+                <ul>
+                    <li>Fetches a list of posts from <span class="inline-code">https://jsonplaceholder.typicode.com/posts</span></li>
+                    <li>Displays them as cards (title, body)</li>
+                    <li>Allows filtering by a search term (event listener)</li>
+                    <li>Shows a counter of how many posts match the filter</li>
+                </ul>
+                <p style="margin-top:12px;">👇 <strong>Try it live below!</strong> The dashboard is pre-built with the concepts you learned.</p>
+                <div class="interactive-demo" style="background:var(--bg-primary);">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                        <input type="text" id="searchInput" placeholder="🔍 Filter posts..." style="flex:1;min-width:160px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:30px;padding:8px 18px;font-size:14px;">
+                        <span id="postCounter" style="color:var(--text-secondary);font-size:14px;">0 posts</span>
+                        <button class="btn btn-primary" id="loadPostsBtn">🔄 Load Posts</button>
+                    </div>
+                    <div id="postsContainer" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-height:350px;overflow-y:auto;padding:4px;">
+                        <p style="color:var(--text-muted);grid-column:1/-1;text-align:center;">Click "Load Posts" to fetch data.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cheat Sheet -->
+            <div class="card">
+                <h3>📋 Cheat Sheet — Quick Reference</h3>
+                <div class="cheat-sheet-grid">
+                    <div class="item"><span class="term">let x = 5;</span><div class="def">Mutable variable</div></div>
+                    <div class="item"><span class="term">const y = 10;</span><div class="def">Immutable binding</div></div>
+                    <div class="item"><span class="term">function fn() {}</span><div class="def">Function declaration</div></div>
+                    <div class="item"><span class="term">() => {}</span><div class="def">Arrow function</div></div>
+                    <div class="item"><span class="term">document.querySelector()</span><div class="def">Select first match</div></div>
+                    <div class="item"><span class="term">addEventListener()</span><div class="def">Attach event handler</div></div>
+                    <div class="item"><span class="term">fetch(url)</span><div class="def">Make HTTP request</div></div>
+                    <div class="item"><span class="term">await promise</span><div class="def">Wait for promise</div></div>
+                    <div class="item"><span class="term">element.textContent</span><div class="def">Set/Get text</div></div>
+                    <div class="item"><span class="term">classList.toggle()</span><div class="def">Toggle CSS class</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📝 Summary Notes</h3>
+                <ul>
+                    <li><strong>Variables</strong>: <span class="inline-code">let</span> (mutable), <span class="inline-code">const</span> (immutable), <span class="inline-code">var</span> (avoid).</li>
+                    <li><strong>Functions</strong>: Reusable blocks; arrows for callbacks.</li>
+                    <li><strong>DOM</strong>: Tree structure; select, modify, create elements.</li>
+                    <li><strong>Events</strong>: Listeners, delegation, event object.</li>
+                    <li><strong>Async</strong>: Promises, <span class="inline-code">async/await</span>, <span class="inline-code">fetch</span> for APIs.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🌱 Continue Learning</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div><h4 style="font-size:16px;">📚 Books</h4><ul style="font-size:14px;"><li>Eloquent JavaScript (free online)</li><li>You Don't Know JS (series)</li><li>JavaScript: The Definitive Guide</li></ul></div>
+                    <div><h4 style="font-size:16px;">📄 Documentation</h4><ul style="font-size:14px;"><li>MDN Web Docs (mozilla.org)</li><li>JavaScript.info</li></ul></div>
+                    <div><h4 style="font-size:16px;">🧪 Practice Platforms</h4><ul style="font-size:14px;"><li>CodePen / JSFiddle</li><li>FreeCodeCamp</li><li>LeetCode (JS)</li></ul></div>
+                    <div><h4 style="font-size:16px;">💬 Communities</h4><ul style="font-size:14px;"><li>Stack Overflow</li><li>r/javascript</li><li>Dev.to</li></ul></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔍 Search Keywords</h3>
+                <p><span class="inline-code">"JavaScript closures"</span> · <span class="inline-code">"event loop"</span> · <span class="inline-code">"prototypal inheritance"</span> · <span class="inline-code">"higher-order functions"</span></p>
+            </div>
+
+            <div class="card">
+                <h3>🤖 AI Prompts for Further Learning</h3>
+                <ul>
+                    <li><em>"Explain JavaScript event delegation with a practical example."</em></li>
+                    <li><em>"Show me how to debounce a search input in JavaScript."</em></li>
+                    <li><em>"Compare `var`, `let`, and `const` with hoisting examples."</em></li>
+                    <li><em>"Generate a simple todo list app using vanilla JavaScript."</em></li>
+                </ul>
+            </div>
+
+            <div style="text-align:center;margin-top:28px;padding:20px;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border-subtle);">
+                <p style="font-size:18px;font-weight:600;">🎉 You've completed the JavaScript Essentials Studio!</p>
+                <p style="color:var(--text-secondary);">Keep building, keep learning. The web is yours.</p>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer style="margin-top:40px;padding-top:20px;border-top:1px solid var(--border-subtle);text-align:center;color:var(--text-muted);font-size:14px;">
+            Interactive Learning Studio — JavaScript Essentials · Built with 💙
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // ----- STATE -----
+            const state = {
+                currentModule: 0, // 0=intro, 1-4=modules, 5=final
+                modulesUnlocked: [true, false, false, false, false, false],
+                quizPassed: [false, false, false, false], // index 0=mod1 ...
+                starsEarned: [false, false, false, false],
+                quizSubmitted: [false, false, false, false],
+                totalModules: 5, // 1-4 + final (final unlocks when all 4 passed)
+            };
+
+            // ----- DOM refs -----
+            const sections = document.querySelectorAll('.section');
+            const navBtns = document.querySelectorAll('.module-nav button');
+            const progressFill = document.getElementById('progressFill');
+            const progressLabel = document.getElementById('progressLabel');
+            const starEls = [document.getElementById('star0'), document.getElementById('star1'), document.getElementById('star2'),
+                document.getElementById('star3')
+            ];
+
+            // ----- helper: update nav & progress -----
+            function updateUI() {
+                // update nav buttons
+                navBtns.forEach((btn, idx) => {
+                    const mod = parseInt(btn.dataset.module);
+                    if (mod === 0) {
+                        btn.disabled = false;
+                    } else if (mod <= 4) {
+                        btn.disabled = !state.modulesUnlocked[mod];
+                    } else if (mod === 5) {
+                        // final unlocked if all 4 modules passed
+                        const allPassed = state.quizPassed.every(v => v === true);
+                        btn.disabled = !allPassed;
+                        if (allPassed && !state.modulesUnlocked[5]) {
+                            state.modulesUnlocked[5] = true;
+                        }
+                    }
+                    // active
+                    btn.classList.toggle('active', mod === state.currentModule);
+                    // show check marks
+                    let iconSpan = btn.querySelector('.nav-icon') || document.createElement('span');
+                    if (!btn.querySelector('.nav-icon')) {
+                        iconSpan.className = 'nav-icon';
+                        btn.prepend(iconSpan);
+                    }
+                    if (mod >= 1 && mod <= 4 && state.quizPassed[mod - 1]) {
+                        iconSpan.textContent = '✅';
+                    } else if (mod === 5 && state.modulesUnlocked[5]) {
+                        iconSpan.textContent = '🏆';
+                    } else if (mod >= 1 && mod <= 4 && !state.modulesUnlocked[mod]) {
+                        iconSpan.textContent = '🔒';
+                    } else if (mod === 0) {
+                        iconSpan.textContent = '🏠';
+                    } else if (mod === 5 && !state.modulesUnlocked[5]) {
+                        iconSpan.textContent = '🔒';
+                    } else {
+                        iconSpan.textContent = mod === 0 ? '🏠' : '';
+                    }
+                });
+
+                // update stars
+                starEls.forEach((el, i) => {
+                    if (state.starsEarned[i]) {
+                        el.classList.remove('dim');
+                        el.textContent = '⭐';
+                    } else {
+                        el.classList.add('dim');
+                        el.textContent = '☆';
+                    }
+                });
+
+                // update progress
+                const passedCount = state.quizPassed.filter(Boolean).length;
+                const pct = Math.round((passedCount / 4) * 100);
+                progressFill.style.width = pct + '%';
+                progressLabel.textContent = pct + '%';
+            }
+
+            // ----- navigation -----
+            window.goToModule = function(idx) {
+                // check if unlocked
+                if (idx === 0) {
+                    // always
+                } else if (idx <= 4) {
+                    if (!state.modulesUnlocked[idx]) {
+                        // if not unlocked, maybe it's a quiz pass? check if quiz passed for previous?
+                        if (idx > 1 && state.quizPassed[idx - 2]) {
+                            state.modulesUnlocked[idx] = true;
+                        } else if (idx === 1) {
+                            state.modulesUnlocked[1] = true; // mod1 always unlocked after intro
+                        } else {
+                            // show unlock message?
+                            alert('Complete the previous module quiz to unlock this module.');
+                            return;
+                        }
+                    }
+                } else if (idx === 5) {
+                    const allPassed = state.quizPassed.every(v => v === true);
+                    if (!allPassed) {
+                        alert('Complete all four module quizzes to unlock the final challenge.');
+                        return;
+                    }
+                    state.modulesUnlocked[5] = true;
+                }
+
+                // update sections
+                sections.forEach((sec, i) => {
+                    sec.classList.toggle('active', i === idx);
+                });
+                state.currentModule = idx;
+                updateUI();
+                // scroll to top
+                document.querySelector('#app').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            // nav button clicks
+            navBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.module);
+                    goToModule(idx);
+                });
+            });
+
+            // also handle intro "Start Learning" button
+            document.querySelector('#section0 .btn-primary')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                goToModule(1);
+            });
+
+            // ----- Module 1: Temp converter -----
+            document.getElementById('convertTempBtn')?.addEventListener('click', function() {
+                const input = document.getElementById('tempInput');
+                const output = document.getElementById('tempOutput');
+                const c = parseFloat(input.value);
+                if (isNaN(c)) {
+                    output.innerHTML = '<span class="error">❌ Please enter a valid number.</span>';
+                    return;
+                }
+                const f = (c * 9 / 5) + 32;
+                output.innerHTML =
+                    `<span class="success">✅ ${c}°C = ${f.toFixed(1)}°F</span><br><span style="color:var(--text-muted);font-size:13px;">Formula: (C × 9/5) + 32</span>`;
+            });
+
+            // ----- Module 2: Grade calculator -----
+            document.getElementById('gradeBtn')?.addEventListener('click', function() {
+                const input = document.getElementById('scoreInput');
+                const output = document.getElementById('gradeOutput');
+                const score = parseFloat(input.value);
+                if (isNaN(score) || score < 0 || score > 100) {
+                    output.innerHTML = '<span class="error">❌ Enter a number between 0 and 100.</span>';
+                    return;
+                }
+                let grade, msg;
+                if (score >= 90) { grade = 'A';
+                    msg = 'Excellent!'; } else if (score >= 80) { grade = 'B';
+                    msg = 'Good job!'; } else if (score >= 70) { grade = 'C';
+                    msg = 'Keep improving.'; } else if (score >= 60) { grade = 'D';
+                    msg = 'Review the material.'; } else { grade = 'F';
+                    msg = 'Need more practice.'; }
+                output.innerHTML =
+                    `<span class="success">📊 Score: ${score} → Grade: <strong>${grade}</strong></span><br><span style="color:var(--text-muted);font-size:13px;">${msg}</span>`;
+            });
+
+            // ----- Module 3: Color changer (event delegation) -----
+            const colorDemo = document.getElementById('colorDemo');
+            if (colorDemo) {
+                colorDemo.addEventListener('click', function(e) {
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    if (btn.id === 'resetColorBtn') {
+                        this.style.background = 'var(--bg-primary)';
+                        return;
+                    }
+                    const color = btn.dataset.color;
+                    if (color) {
+                        this.style.background = color;
+                        // keep text readable
+                        this.style.transition = 'background 0.3s';
+                    }
+                });
+            }
+
+            // ----- Module 4: Fetch users -----
+            document.getElementById('fetchUsersBtn')?.addEventListener('click', async function() {
+                const output = document.getElementById('usersOutput');
+                output.innerHTML = '⏳ Loading...';
+                try {
+                    const res = await fetch('https://jsonplaceholder.typicode.com/users');
+                    if (!res.ok) throw new Error('Network error');
+                    const users = await res.json();
+                    let html = users.map(u =>
+                        `<div style="padding:6px 0;border-bottom:1px solid var(--border-subtle);"><strong>${u.name}</strong> · ${u.email}</div>`
+                    ).join('');
+                    output.innerHTML = html || '<span class="text-muted">No users found.</span>';
+                } catch (err) {
+                    output.innerHTML = `<span class="error">❌ Failed to fetch: ${err.message}</span>`;
+                }
+            });
+
+            // ----- FINAL CHALLENGE: Dashboard -----
+            let postsData = [];
+
+            async function loadPosts() {
+                const container = document.getElementById('postsContainer');
+                const counter = document.getElementById('postCounter');
+                if (!container) return;
+                container.innerHTML = '⏳ Loading posts...';
+                try {
+                    const res = await fetch('https://jsonplaceholder.typicode.com/posts');
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    postsData = await res.json();
+                    renderPosts(postsData);
+                } catch (err) {
+                    container.innerHTML =
+                    `<span class="error" style="grid-column:1/-1;">❌ Error: ${err.message}</span>`;
+                }
+            }
+
+            function renderPosts(posts) {
+                const container = document.getElementById('postsContainer');
+                const counter = document.getElementById('postCounter');
+                if (!container) return;
+                if (!posts || posts.length === 0) {
+                    container.innerHTML =
+                    '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;">No posts match.</p>';
+                    if (counter) counter.textContent = '0 posts';
+                    return;
+                }
+                const html = posts.map(p =>
+                    `<div style="background:var(--bg-card);border-radius:10px;padding:12px;border:1px solid var(--border-subtle);">
+                <strong style="font-size:14px;">${p.title}</strong>
+                <p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">${p.body.slice(0,60)}…</p>
+              </div>`
+                ).join('');
+                container.innerHTML = html;
+                if (counter) counter.textContent = `${posts.length} posts`;
+            }
+
+            document.getElementById('loadPostsBtn')?.addEventListener('click', loadPosts);
+
+            document.getElementById('searchInput')?.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                if (!postsData || postsData.length === 0) {
+                    // maybe load automatically?
+                    loadPosts().then(() => {
+                        filterPosts(term);
+                    });
+                } else {
+                    filterPosts(term);
+                }
+            });
+
+            function filterPosts(term) {
+                if (!postsData || postsData.length === 0) return;
+                if (!term) {
+                    renderPosts(postsData);
+                    return;
+                }
+                const filtered = postsData.filter(p =>
+                    p.title.toLowerCase().includes(term) ||
+                    p.body.toLowerCase().includes(term)
+                );
+                renderPosts(filtered);
+            }
+
+            // auto-load posts when final section becomes visible? We'll load on button click.
+
+            // ----- QUIZ ENGINE -----
+            const quizData = [{
+                id: 'quiz1',
+                questions: [{
+                    q: 'Which keyword creates a variable that cannot be reassigned?',
+                    options: ['let', 'const', 'var', 'all of them'],
+                    answer: 1,
+                    explanation: '`const` creates an immutable binding. `let` allows reassignment, `var` is legacy.'
+                }, {
+                    q: 'What is the result of `"10" + 2` in JavaScript?',
+                    options: ['12', '102', 'NaN', 'undefined'],
+                    answer: 1,
+                    explanation: 'The `+` operator concatenates strings, so `"10" + 2` becomes `"102"`.'
+                }, {
+                    q: 'Which operator checks for both value AND type equality?',
+                    options: ['==', '===', '!=', '!=='],
+                    answer: 1,
+                    explanation: '`===` is strict equality; it checks both value and type.'
+                }, {
+                    q: 'What is the type of `null` according to `typeof`?',
+                    options: ['null', 'undefined', 'object', 'number'],
+                    answer: 2,
+                    explanation: 'Historical bug: `typeof null` returns `"object"` even though null is a primitive.'
+                }],
+                submitId: 'submitQuiz1',
+                summaryId: 'quiz1Summary',
+                containerId: 'quiz1Questions',
+                moduleIndex: 0
+            }, {
+                id: 'quiz2',
+                questions: [{
+                    q: 'Which of the following is a function declaration?',
+                    options: ['function foo() {}', 'const foo = function() {}', 'const foo = () => {}',
+                        'All of the above'
+                    ],
+                    answer: 0,
+                    explanation: 'Only `function foo() {}` is a declaration (hoisted). The others are expressions.'
+                }, {
+                    q: 'What is the output? `for (let i = 0; i < 3; i++) { console.log(i); }`',
+                    options: ['0,1,2', '1,2,3', '0,1,2,3', 'undefined'],
+                    answer: 0,
+                    explanation: 'Loop runs while i < 3, so i takes 0,1,2.'
+                }, {
+                    q: 'What is hoisting?',
+                    options: [
+                        'Moving variables to the top of the scope', 'Moving functions to the top',
+                        'Both declarations and functions are hoisted', 'None of the above'
+                    ],
+                    answer: 2,
+                    explanation: 'Both `var` declarations and function declarations are hoisted (but not assignments).'
+                }, {
+                    q: 'Which arrow function syntax is correct for returning an object?',
+                    options: ['() => { name: "JS" }', '() => ({ name: "JS" })', '() => return { name: "JS" }',
+                        '() => {return {name:"JS"}}'
+                    ],
+                    answer: 1,
+                    explanation: 'Wrap the object in parentheses to avoid ambiguity with the block body.'
+                }],
+                submitId: 'submitQuiz2',
+                summaryId: 'quiz2Summary',
+                containerId: 'quiz2Questions',
+                moduleIndex: 1
+            }, {
+                id: 'quiz3',
+                questions: [{
+                    q: 'Which method selects the FIRST element matching a CSS selector?',
+                    options: ['getElementById', 'querySelector', 'querySelectorAll', 'getElementsByClassName'],
+                    answer: 1,
+                    explanation: '`querySelector` returns the first match; `querySelectorAll` returns all.'
+                }, {
+                    q: 'What does `event.stopPropagation()` do?',
+                    options: ['Prevents default action', 'Stops event from bubbling up',
+                        'Removes event listener', 'Prevents further listeners on same element'
+                    ],
+                    answer: 1,
+                    explanation: '`stopPropagation()` prevents the event from bubbling up the DOM tree.'
+                }, {
+                    q: 'Which property is safest for inserting user-provided text?',
+                    options: ['innerHTML', 'outerHTML', 'textContent', 'innerText'],
+                    answer: 2,
+                    explanation: '`textContent` is safe because it escapes HTML, preventing XSS.'
+                }, {
+                    q: 'What is event delegation?',
+                    options: [
+                        'Attaching a listener to each child', 'Attaching a listener to a parent to handle children',
+                        'Removing all event listeners', 'Preventing event bubbling'
+                    ],
+                    answer: 1,
+                    explanation: 'Delegation leverages bubbling: attach one listener to a parent and use event.target.'
+                }],
+                submitId: 'submitQuiz3',
+                summaryId: 'quiz3Summary',
+                containerId: 'quiz3Questions',
+                moduleIndex: 2
+            }, {
+                id: 'quiz4',
+                questions: [{
+                    q: 'What state does a Promise start in?',
+                    options: ['fulfilled', 'rejected', 'pending', 'settled'],
+                    answer: 2,
+                    explanation: 'A Promise starts as pending, then resolves to fulfilled or rejected.'
+                }, {
+                    q: 'Which keyword pauses execution until a Promise resolves?',
+                    options: ['await', 'then', 'async', 'wait'],
+                    answer: 0,
+                    explanation: '`await` pauses the async function until the Promise settles.'
+                }, {
+                    q: 'What does `fetch()` return?',
+                    options: ['A string', 'A Promise', 'A Response object directly', 'An array'],
+                    answer: 1,
+                    explanation: '`fetch()` returns a Promise that resolves to a Response object.'
+                }, {
+                    q: 'How do you handle errors with async/await?',
+                    options: ['try/catch', '.catch()', 'Both A and B', 'None of the above'],
+                    answer: 2,
+                    explanation: 'You can use try/catch with async/await, or .catch() with Promises.'
+                }],
+                submitId: 'submitQuiz4',
+                summaryId: 'quiz4Summary',
+                containerId: 'quiz4Questions',
+                moduleIndex: 3
+            }];
+
+            // render quizzes
+            quizData.forEach((qz, idx) => {
+                const container = document.getElementById(qz.containerId);
+                if (!container) return;
+                let html = '';
+                qz.questions.forEach((q, qi) => {
+                    html += `
+                <div class="quiz-question" data-q="${qz.moduleIndex}-${qi}">
+                  <div class="q-text">${qi+1}. ${q.q}</div>
+                  <div class="quiz-options">
+                    ${q.options.map((opt, oi) => `
+                      <label data-oi="${oi}">
+                        <input type="radio" name="q${qz.moduleIndex}-${qi}" value="${oi}">
+                        ${opt}
+                      </label>
+                    `).join('')}
+                  </div>
+                  <div class="quiz-feedback" id="fb-${qz.moduleIndex}-${qi}"></div>
+                </div>
+              `;
+                });
+                container.innerHTML = html;
+            });
+
+            // submit handlers
+            quizData.forEach((qz) => {
+                const btn = document.getElementById(qz.submitId);
+                const summary = document.getElementById(qz.summaryId);
+                if (!btn || !summary) return;
+
+                btn.addEventListener('click', function() {
+                    if (state.quizSubmitted[qz.moduleIndex]) {
+                        alert('You already submitted this quiz. Proceed to the next module.');
+                        return;
+                    }
+
+                    let correct = 0;
+                    let total = qz.questions.length;
+                    let allAnswered = true;
+
+                    qz.questions.forEach((q, qi) => {
+                        const radios = document.querySelectorAll(
+                            `input[name="q${qz.moduleIndex}-${qi}"]`);
+                        let selected = null;
+                        radios.forEach(r => { if (r.checked) selected = parseInt(r.value); });
+                        const fb = document.getElementById(`fb-${qz.moduleIndex}-${qi}`);
+                        const labels = document.querySelectorAll(
+                            `.quiz-question[data-q="${qz.moduleIndex}-${qi}"] .quiz-options label`
+                            );
+
+                        // reset
+                        labels.forEach(l => { l.classList.remove('correct', 'wrong', 'disabled');
+                            l.style.pointerEvents = 'auto'; });
+
+                        if (selected === null) {
+                            allAnswered = false;
+                            fb.className = 'quiz-feedback show wrong';
+                            fb.textContent = '⚠️ Please select an answer.';
+                            return;
+                        }
+
+                        // disable all radios
+                        radios.forEach(r => r.disabled = true);
+                        labels.forEach(l => l.classList.add('disabled'));
+
+                        const isCorrect = (selected === q.answer);
+                        if (isCorrect) correct++;
+
+                        labels.forEach((l, oi) => {
+                            if (oi === q.answer) l.classList.add('correct');
+                            else if (oi === selected && !isCorrect) l.classList.add('wrong');
+                        });
+
+                        fb.className = `quiz-feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+                        fb.innerHTML = `<strong>${isCorrect ? '✅ Correct' : '❌ Incorrect'}</strong> — ${q.explanation}`;
+                    });
+
+                    if (!allAnswered) {
+                        // but we already showed feedback for unanswered
+                        return;
+                    }
+
+                    const passed = correct >= 3;
+                    state.quizPassed[qz.moduleIndex] = passed;
+                    state.quizSubmitted[qz.moduleIndex] = true;
+                    if (passed) {
+                        state.starsEarned[qz.moduleIndex] = true;
+                        // unlock next module
+                        if (qz.moduleIndex < 4) {
+                            state.modulesUnlocked[qz.moduleIndex + 1] = true;
+                        }
+                    }
+
+                    summary.className = 'quiz-summary show';
+                    summary.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                  <div>
+                    <span class="score-big">${correct}/${total}</span>
+                    <span style="color:var(--text-secondary);"> — ${passed ? '✅ Passed!' : '❌ Try again'}</span>
+                  </div>
+                  <div>
+                    ${passed ? '⭐ You earned a star!' : '💪 Review the material and retry.'}
+                  </div>
+                </div>
+                ${passed ? `<p style="margin-top:8px;color:var(--green);">Module ${qz.moduleIndex+1} complete! Next module unlocked.</p>` : `<p style="margin-top:8px;color:var(--red);">You need at least 3 correct. Please retry.</p>`}
+              `;
+
+                    // disable submit button
+                    btn.disabled = true;
+                    btn.textContent = passed ? '✅ Completed' : '🔁 Retry';
+                    if (!passed) {
+                        // allow retry: reset submitted state but keep quiz data?
+                        // we can re-enable on retry
+                        btn.addEventListener('click', function retryHandler() {
+                            // reset quiz for retry
+                            if (state.quizSubmitted[qz.moduleIndex]) {
+                                // if passed, don't reset
+                                if (state.quizPassed[qz.moduleIndex]) return;
+                                // reset
+                                state.quizSubmitted[qz.moduleIndex] = false;
+                                summary.className = 'quiz-summary';
+                                summary.innerHTML = '';
+                                btn.disabled = false;
+                                btn.textContent = 'Submit Quiz';
+                                // re-enable radios
+                                document.querySelectorAll(`input[name^="q${qz.moduleIndex}-"]`)
+                                    .forEach(r => r.disabled = false);
+                                document.querySelectorAll(`.quiz-question[data-q^="${qz.moduleIndex}-"] .quiz-options label`)
+                                    .forEach(l => { l.classList.remove('correct', 'wrong', 'disabled');
+                                        l.style.pointerEvents = 'auto'; });
+                                document.querySelectorAll(`.quiz-feedback`).forEach(el => {
+                                    el.className = 'quiz-feedback';
+                                    el.textContent = '';
+                                });
+                                btn.removeEventListener('click', retryHandler);
+                            }
+                        });
+                    }
+
+                    updateUI();
+                });
+            });
+
+            // unlock first module
+            state.modulesUnlocked[1] = true;
+            updateUI();
+
+            // Dark mode toggle (simple)
+            const darkToggle = document.getElementById('darkToggle');
+            let darkMode = true;
+            darkToggle?.addEventListener('click', function() {
+                darkMode = !darkMode;
+                const root = document.documentElement;
+                if (darkMode) {
+                    root.style.setProperty('--bg-primary', '#0b0e14');
+                    root.style.setProperty('--bg-secondary', '#141a24');
+                    root.style.setProperty('--bg-card', '#1c2432');
+                    root.style.setProperty('--bg-card-hover', '#263040');
+                    root.style.setProperty('--border-subtle', '#2a3444');
+                    root.style.setProperty('--text-primary', '#e8edf5');
+                    root.style.setProperty('--text-secondary', '#9aaec9');
+                    this.textContent = '🌙';
+                } else {
+                    root.style.setProperty('--bg-primary', '#f0f4ff');
+                    root.style.setProperty('--bg-secondary', '#ffffff');
+                    root.style.setProperty('--bg-card', '#e8edf8');
+                    root.style.setProperty('--bg-card-hover', '#dce4f2');
+                    root.style.setProperty('--border-subtle', '#c8d0e0');
+                    root.style.setProperty('--text-primary', '#1a2233');
+                    root.style.setProperty('--text-secondary', '#3a4a66');
+                    this.textContent = '☀️';
+                }
+            });
+
+            // auto-load posts on final module if requested? user will click.
+
+            console.log('🚀 Interactive Learning Studio loaded. Enjoy!');
+        })();
+    </script>
+</body>
+</html>
