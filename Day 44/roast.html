@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Roast &amp; Rebuild — Aanchal</title>
+<style>
+:root{
+  --bg:#0D1117;
+  --bg-card:#151B26;
+  --bg-raised:#1C2431;
+  --line:#28303F;
+  --text:#EAEEF5;
+  --text-dim:#9AA6B8;
+  --text-faint:#5C6779;
+  --red:#FF6B6B;
+  --green:#4ADE80;
+  --gold:#F5B942;
+  --blue:#5EA6FF;
+  --font-head:'Sora',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.6;padding-bottom:80px;}
+.wrap{max-width:920px;margin:0 auto;padding:0 20px;}
+header.top{padding:48px 0 32px;text-align:center;border-bottom:1px solid var(--line);}
+header.top .eyebrow{font-family:var(--font-mono);font-size:.75rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;}
+header.top h1{font-family:var(--font-head);font-size:clamp(1.8rem,4vw,2.6rem);}
+header.top p{color:var(--text-dim);margin-top:10px;max-width:560px;margin-left:auto;margin-right:auto;}
+
+.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:32px 0;position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:10;border-bottom:1px solid var(--line);}
+.tab-btn{font-family:var(--font-mono);font-size:.78rem;padding:9px 16px;border-radius:6px;border:1px solid var(--line);background:var(--bg-raised);color:var(--text-dim);cursor:pointer;transition:.15s;}
+.tab-btn.active{background:var(--gold);color:#241A02;border-color:var(--gold);font-weight:700;}
+.tab-btn:hover:not(.active){color:var(--text);border-color:var(--text-faint);}
+
+.panel{display:none;padding:12px 0 40px;animation:fade .3s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.score-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-weight:700;font-size:1.4rem;padding:6px 16px;border-radius:8px;}
+.score-badge.low{background:#3A1414;color:var(--red);}
+.score-badge.mid{background:#3A2E0A;color:var(--gold);}
+.score-badge.high{background:#123A22;color:var(--green);}
+
+.overall-card{text-align:center;background:var(--bg-card);border:1px solid var(--line);border-radius:12px;padding:28px;margin-bottom:28px;}
+.overall-card .label{font-family:var(--font-mono);font-size:.75rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;}
+.overall-card .num{font-family:var(--font-head);font-size:3rem;color:var(--red);margin-top:6px;}
+
+.card{background:var(--bg-card);border:1px solid var(--line);border-radius:10px;padding:22px 24px;margin-bottom:18px;}
+.card h3{font-family:var(--font-head);font-size:1.05rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.card .quote{font-family:var(--font-mono);font-size:.85rem;color:var(--text-dim);background:var(--bg-raised);border-left:3px solid var(--red);padding:10px 14px;border-radius:0 6px 6px 0;margin-bottom:12px;}
+.card p.line{margin-bottom:8px;font-size:.92rem;color:var(--text-dim);}
+.card p.line b{color:var(--text);}
+
+.rebuild-block{margin-bottom:22px;}
+.rebuild-block h3{font-family:var(--font-head);font-size:1.1rem;margin-bottom:10px;color:var(--gold);}
+.option{background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
+.option .tag{font-family:var(--font-mono);font-size:.68rem;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;}
+.option .txt{font-family:var(--font-head);font-size:1rem;margin-top:6px;}
+.option .why{font-size:.82rem;color:var(--text-faint);margin-top:6px;}
+
+.about-strip{background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:18px 20px;font-size:.92rem;color:var(--text-dim);white-space:pre-wrap;font-family:var(--font-body);margin-bottom:10px;}
+.about-strip .seg-label{font-family:var(--font-mono);font-size:.65rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:4px;}
+.keywords{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.kw{font-family:var(--font-mono);font-size:.72rem;border:1px solid var(--line);padding:5px 10px;border-radius:20px;color:var(--text-dim);}
+
+.ba-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:640px){.ba-row{grid-template-columns:1fr;}}
+.ba-col{border-radius:8px;padding:12px 14px;font-size:.85rem;}
+.ba-col.before{background:#241313;border:1px solid #3A1E1E;color:#E8B4B4;}
+.ba-col.after{background:#0F241A;border:1px solid #1E3A2C;color:#B4E8CC;}
+.ba-col .lbl{font-family:var(--font-mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin-bottom:4px;display:block;}
+
+.flag{background:#241A05;border:1px solid #4A3410;border-radius:8px;padding:14px 16px;font-size:.88rem;color:var(--gold);margin-bottom:16px;}
+.flag b{color:#FFD37A;}
+
+table.sc{width:100%;border-collapse:collapse;margin-top:10px;}
+table.sc th,table.sc td{border:1px solid var(--line);padding:10px 12px;text-align:left;font-size:.88rem;}
+table.sc th{font-family:var(--font-mono);font-size:.68rem;text-transform:uppercase;color:var(--text-faint);background:var(--bg-raised);}
+table.sc td.up{color:var(--green);font-family:var(--font-mono);}
+
+.day-card{border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px;background:var(--bg-card);}
+.day-card .d{font-family:var(--font-mono);font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.day-card h4{font-family:var(--font-head);font-size:1rem;margin-bottom:8px;}
+.day-card ul{margin-left:18px;font-size:.88rem;color:var(--text-dim);}
+.day-card ul li{margin-bottom:4px;}
+.msg-template{font-family:var(--font-mono);font-size:.82rem;background:var(--bg-raised);border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin-top:8px;color:#B4D4E8;}
+
+.summary-card{background:linear-gradient(135deg,#1C2431,#151B26);border:2px solid var(--gold);border-radius:14px;padding:28px 30px;text-align:left;}
+.summary-card h2{font-family:var(--font-head);font-size:1.3rem;margin-bottom:16px;}
+.summary-card .scoreline{display:flex;gap:16px;align-items:center;font-family:var(--font-mono);font-size:1rem;margin-bottom:16px;}
+.summary-card .scoreline .arrow{color:var(--text-faint);}
+.summary-card ol{margin-left:20px;margin-bottom:16px;font-size:.92rem;}
+.summary-card ol li{margin-bottom:6px;}
+.summary-card .highlight{background:var(--bg-raised);border-left:3px solid var(--gold);padding:12px 14px;border-radius:0 8px 8px 0;font-size:.9rem;}
+.copy-btn{margin-top:16px;font-family:var(--font-mono);font-size:.75rem;background:var(--gold);color:#241A02;border:none;padding:9px 16px;border-radius:6px;cursor:pointer;font-weight:700;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gold);color:#241A02;font-family:var(--font-mono);font-size:.8rem;padding:10px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:.25s;font-weight:700;z-index:100;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media print{.tabs{display:none;} .panel{display:block !important;} body{background:#fff;color:#111;}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<header class="top">
+  <div class="eyebrow">LinkedIn Profile Audit</div>
+  <h1>The Roast &amp; Rebuild — Aanchal</h1>
+  <p>Honest scoring, a full rewrite, and a 7-day plan to make your profile work toward one goal: landing a Frontend Developer internship.</p>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="roast">1 · Roast</button>
+    <button class="tab-btn" data-tab="rebuild">2 · Rebuild</button>
+    <button class="tab-btn" data-tab="scorecard">3 · Scorecard</button>
+    <button class="tab-btn" data-tab="plan">4 · 7-Day Plan</button>
+    <button class="tab-btn" data-tab="summary">5 · Summary</button>
+  </div>
+
+  <!-- PART 1 ROAST -->
+  <div class="panel active" id="roast">
+    <div class="overall-card">
+      <div class="label">Overall Profile Strength</div>
+      <div class="num">38<span style="font-size:1.3rem;color:var(--text-faint);">/100</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Headline <span class="score-badge low">3/10</span></h3>
+      <div class="quote">"Pursuing B.tech (CSE)"</div>
+      <p class="line">❌ <b>The problem:</b> This is a status update, not a headline. It tells recruiters where you are in school, not what you can do or where you're headed.</p>
+      <p class="line">🧠 <b>Why it hurts:</b> Recruiters searching "Frontend Developer intern" or "React JavaScript" will never surface your profile — there's not a single relevant keyword here. A generic student headline reads as "not differentiated yet."</p>
+      <p class="line">🔍 <b>Invisible cost:</b> LinkedIn search ranks headline keywords heavily. Every recruiter search for frontend-specific terms is a search you're currently invisible to.</p>
+    </div>
+
+    <div class="card">
+      <h3>About — First 2 Lines <span class="score-badge mid">5/10</span></h3>
+      <div class="quote">"I have a solid foundation in HTML, CSS, and JavaScript for the frontend, paired with hands-on experience in Java, Python, MySQL, and PostgreSQL on the backend."</div>
+      <p class="line">❌ <b>The problem:</b> "Solid foundation" is the single most overused opener in student profiles — it's true of thousands of profiles and says nothing specific about you.</p>
+      <p class="line">🧠 <b>Why it hurts:</b> The first two lines are the only thing visible before "see more." A generic opener means recruiters never click through to the good stuff further down.</p>
+      <p class="line">🔍 <b>Invisible cost:</b> You have a genuinely interesting hook available (real internship contributions, 40+ shipped projects) and it's buried below the fold where most readers never scroll.</p>
+    </div>
+
+    <div class="card">
+      <h3>About — Full Section <span class="score-badge mid">6/10</span></h3>
+      <p class="line">❌ <b>The problem:</b> The content itself is strong and specific (database migration, idempotent seeding script, Bank Management System) — but it's written as one dense paragraph with no line breaks, no proof numbers, and no closing call-to-action.</p>
+      <p class="line">🧠 <b>Why it hurts:</b> Recruiters skim, they don't read. A wall of text with no visual breathing room gets scanned for 3 seconds and skipped, even when the substance is good.</p>
+      <p class="line">🔍 <b>Invisible cost:</b> You're doing the hard part (real work, real projects) and losing credit for it purely on formatting.</p>
+    </div>
+
+    <div class="card">
+      <h3>Experience <span class="score-badge low">2/10</span></h3>
+      <div class="flag"><b>Biggest gap on your profile:</b> Based on what you've shared, your UptoSkills Prompt Engineering internship doesn't appear to be added as a formal Experience entry yet — only the About section mentions it.</div>
+      <p class="line">❌ <b>The problem:</b> Real internship work (database migration, code reviews, Agile) with no Experience entry means it doesn't show in your profile's work history at all.</p>
+      <p class="line">🧠 <b>Why it hurts:</b> Recruiters scan Experience before About. A blank or missing Experience section reads as "no work experience" even when that's false.</p>
+      <p class="line">🔍 <b>Invisible cost:</b> This is the single highest-leverage fix available to you — it's real, verifiable work you're currently getting zero visibility credit for.</p>
+    </div>
+
+    <div class="card">
+      <h3>Skills &amp; Keywords <span class="score-badge mid">4/10</span></h3>
+      <div class="quote">JDBC · Front-end Engineering · Python · Java · Git</div>
+      <p class="line">❌ <b>The problem:</b> "JavaScript" and "HTML/CSS" — the two things you lead with in your About section — aren't listed as Skills at all. Also nothing here signals your target role (Frontend Developer) specifically.</p>
+      <p class="line">🧠 <b>Why it hurts:</b> LinkedIn's search and "People also viewed" algorithm weights Skills heavily. If JavaScript isn't a listed skill, you won't surface for JavaScript-based searches — even though you use it daily.</p>
+      <p class="line">🔍 <b>Invisible cost:</b> This is a quick, five-minute fix with outsized search-visibility impact.</p>
+    </div>
+  </div>
+
+  <!-- PART 2 REBUILD -->
+  <div class="panel" id="rebuild">
+
+    <div class="rebuild-block">
+      <h3>Headline — 3 Options</h3>
+      <div class="option">
+        <div class="tag">Option 1 · Keyword-optimized (for search visibility)</div>
+        <div class="txt">Frontend Developer (HTML · CSS · JavaScript) | B.Tech CSE Final Year | Ex-Prompt Engineering Intern @ UptoSkills</div>
+        <div class="why">Why: front-loads the exact terms recruiters search for. Use this if your main goal is showing up in recruiter keyword searches.</div>
+      </div>
+      <div class="option">
+        <div class="tag">Option 2 · Value-proposition</div>
+        <div class="txt">Building fast, functional web interfaces | Frontend Dev in progress | HTML · CSS · JavaScript · Java · MySQL</div>
+        <div class="why">Why: leads with what you do rather than your title — reads more confident and outcome-focused. Use for a stronger first impression on profile visits.</div>
+      </div>
+      <div class="option">
+        <div class="tag">Option 3 · Authority / build-in-public</div>
+        <div class="txt">Final-Year CS Student → Frontend Developer | Shipping AI-Powered Web Projects Daily, Documented in Public</div>
+        <div class="why">Why: leverages your #ABTalksAIChallenge build streak as a differentiator most other CS students don't have. Use this to stand out in a crowded student applicant pool.</div>
+      </div>
+      <p style="color:var(--text-faint);font-size:.85rem;margin-top:6px;">Recommendation: since your target goal is landing a job/internship, <b style="color:var(--text)">Option 1</b> gets you found; <b style="color:var(--text)">Option 3</b> gets you remembered once found. Consider testing Option 1 first — search visibility matters most before anyone reaches your profile at all.</p>
+    </div>
+
+    <div class="rebuild-block">
+      <h3>About Section — Rewrite</h3>
+      <div class="about-strip"><span class="seg-label">Hook (before "see more")</span>I ship one AI-powered web project a day, in public — 40+ days and counting. This is what happens when curiosity meets consistency.</div>
+      <div class="about-strip"><span class="seg-label">Story</span>I'm a final-year B.Tech CSE student building toward a Frontend Developer role, with a solid foundation in HTML, CSS, and JavaScript, plus backend experience in Java, Python, MySQL, and PostgreSQL. During my Prompt Engineering internship at UptoSkills, I went beyond the internship title — contributing to real database migration work, writing an idempotent database seeding script, debugging backend issues, and collaborating with a development team through Git/GitHub branching workflows, code reviews, and Agile practices.</div>
+      <div class="about-strip"><span class="seg-label">Proof</span>I built a full-featured Bank Management System (Java, JDBC, MySQL) applying Object-Oriented Programming principles to handle secure transactions and account management end-to-end — one of 40+ projects I've shipped solo as part of a public 60-day build challenge.</div>
+      <div class="about-strip"><span class="seg-label">CTA</span>If you're hiring Frontend Developer interns, or just want to see what I'm building next — follow along, or send me a message.</div>
+      <div class="keywords">
+        <span class="kw">Frontend Developer</span><span class="kw">HTML</span><span class="kw">CSS</span><span class="kw">JavaScript</span>
+        <span class="kw">Java</span><span class="kw">Python</span><span class="kw">MySQL</span><span class="kw">PostgreSQL</span>
+        <span class="kw">JDBC</span><span class="kw">Git</span><span class="kw">Agile</span>
+      </div>
+    </div>
+
+    <div class="rebuild-block">
+      <h3>Experience — UptoSkills Entry</h3>
+      <div class="flag">This entry doesn't currently exist on your profile as far as you've shared — so there's no "before" to rewrite. Here's a draft to add, built only from what you've told me (nothing invented):</div>
+      <div class="ba-row">
+        <div class="ba-col before"><span class="lbl">Currently on profile</span>— not listed —</div>
+        <div class="ba-col after"><span class="lbl">Add this bullet</span>Contributed to real database migration work supporting data integrity during a 3-month Prompt Engineering internship</div>
+      </div>
+      <div class="ba-row">
+        <div class="ba-col before"><span class="lbl">Currently on profile</span>— not listed —</div>
+        <div class="ba-col after"><span class="lbl">Add this bullet</span>Authored an idempotent database seeding script to enable reliable, repeatable environment setup for the dev team</div>
+      </div>
+      <div class="ba-row">
+        <div class="ba-col before"><span class="lbl">Currently on profile</span>— not listed —</div>
+        <div class="ba-col after"><span class="lbl">Add this bullet</span>Debugged backend issues across the application stack, working directly with engineers to resolve them</div>
+      </div>
+      <div class="ba-row">
+        <div class="ba-col before"><span class="lbl">Currently on profile</span>— not listed —</div>
+        <div class="ba-col after"><span class="lbl">Add this bullet</span>Collaborated within a Git/GitHub branching workflow — participating in code reviews and Agile sprint practices</div>
+      </div>
+      <p style="color:var(--text-faint);font-size:.85rem;">Title: Prompt Engineering Intern · UptoSkills · Apr 2026 – Jul 2026 (3 mos) — use your certificate dates exactly.</p>
+    </div>
+
+    <div class="rebuild-block">
+      <h3>Skills Recommendations</h3>
+      <p class="line" style="margin-bottom:10px;"><b>Add (priority order, for Frontend Developer target):</b></p>
+      <div class="keywords">
+        <span class="kw">JavaScript</span><span class="kw">HTML5</span><span class="kw">CSS3</span><span class="kw">React.js</span>
+        <span class="kw">Responsive Web Design</span><span class="kw">RESTful APIs</span><span class="kw">Version Control</span>
+        <span class="kw">Web Accessibility</span><span class="kw">Agile / Scrum</span><span class="kw">UI/UX Fundamentals</span>
+      </div>
+      <p class="line" style="margin-top:14px;"><b>Remove:</b> nothing needs full removal — your current 5 skills are relevant. The issue isn't irrelevant skills, it's missing ones (JavaScript/HTML/CSS aren't listed despite being your core stack).</p>
+      <p class="line"><b>Pin to top 3:</b> Front-end Engineering, JavaScript (once added), Git.</p>
+    </div>
+  </div>
+
+  <!-- PART 3 SCORECARD -->
+  <div class="panel" id="scorecard">
+    <table class="sc">
+      <thead><tr><th>Section</th><th>Before</th><th>After</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td>Headline</td><td>3/10</td><td>8/10</td><td class="up">+5</td></tr>
+        <tr><td>About (Hook)</td><td>5/10</td><td>8/10</td><td class="up">+3</td></tr>
+        <tr><td>About (Full)</td><td>6/10</td><td>9/10</td><td class="up">+3</td></tr>
+        <tr><td>Experience</td><td>2/10</td><td>7/10</td><td class="up">+5</td></tr>
+        <tr><td>Skills / Keywords</td><td>4/10</td><td>8/10</td><td class="up">+4</td></tr>
+      </tbody>
+    </table>
+    <div class="overall-card" style="margin-top:24px;">
+      <div class="label">Overall — Before → After</div>
+      <div class="num" style="color:var(--green);">38 → 80<span style="font-size:1.3rem;color:var(--text-faint);">/100</span></div>
+      <p style="color:var(--text-dim);font-size:.85rem;margin-top:6px;">Experience is capped at 7/10 rather than higher — it depends on you actually adding it to your profile, which the algorithm can't verify for you.</p>
+    </div>
+  </div>
+
+  <!-- PART 4 PLAN -->
+  <div class="panel" id="plan">
+    <div class="day-card">
+      <div class="d">Day 1</div>
+      <h4>Make all profile changes</h4>
+      <ul>
+        <li>Update headline (pick one of the 3 options)</li>
+        <li>Replace About section with the 4-part rewrite</li>
+        <li>Add the UptoSkills internship as a formal Experience entry</li>
+        <li>Add JavaScript, HTML5, CSS3, React.js to Skills</li>
+        <li>Pin Front-end Engineering, JavaScript, Git to top 3</li>
+      </ul>
+    </div>
+    <div class="day-card">
+      <div class="d">Day 2</div>
+      <h4>Publish Post #1 — "I just rebuilt my LinkedIn"</h4>
+      <div class="msg-template">I spent today rebuilding my LinkedIn profile from scratch.
+
+Before: a headline that said "Pursuing B.Tech (CSE)" — technically true, completely forgettable.
+
+Here's what I changed and why it matters for anyone job-hunting as a CS student: your headline is prime real estate, and "student status" isn't a value proposition.
+
+New headline. New About section. My UptoSkills internship finally listed as actual work experience, not just a line in my bio.
+
+If your profile still reads like a status update instead of a pitch — it might be time for the same audit.
+
+#OpenToWork #FrontendDeveloper #LinkedInOptimization #BuildInPublic</div>
+    </div>
+    <div class="day-card">
+      <div class="d">Day 3</div>
+      <h4>Send 10 strategic connection requests</h4>
+      <p class="line">Target: Frontend Developer recruiters/hiring managers at product companies and startups, engineering managers at companies you'd want to intern at, and CS seniors/alumni from your college now working as developers.</p>
+      <div class="msg-template">Hi [Name], I'm a final-year CS student building toward a Frontend Developer role — really admire [something specific about their work/company]. Would love to connect and follow your journey.</div>
+    </div>
+    <div class="day-card">
+      <div class="d">Day 4</div>
+      <h4>Comment on 5 posts in your target space</h4>
+      <p class="line"><b>Value Comment formula:</b> Agree with a specific point → Add one insight or example from your own experience/build → Ask a genuine follow-up question. Avoid generic "Great post!" comments — they get zero visibility.</p>
+    </div>
+    <div class="day-card">
+      <div class="d">Day 5</div>
+      <h4>Publish Post #2 — lessons-learned / hot take</h4>
+      <div class="msg-template">Unpopular opinion: your LinkedIn Skills section matters more than people think.
+
+I had "Front-end Engineering" listed but not "JavaScript" — the actual language I use every day. Recruiters search by skill keyword, not by job title category. If the exact word isn't on your profile, you don't exist in that search.
+
+Small fix. Real impact on visibility.
+
+#FrontendDeveloper #JobSearch #CareerAdvice</div>
+    </div>
+    <div class="day-card">
+      <div class="d">Day 6</div>
+      <h4>Engage + send 5 more connection requests</h4>
+      <ul>
+        <li>Reply to every comment on both posts within a few hours</li>
+        <li>Send 5 more targeted requests using the Day 3 template</li>
+      </ul>
+    </div>
+    <div class="day-card">
+      <div class="d">Day 7</div>
+      <h4>Review profile views &amp; connection acceptance rate</h4>
+      <p class="line">Check Analytics on your profile. A rising profile-view count means your headline/keywords are working in search. A low connection acceptance rate (under ~40%) usually means your ask is too generic — tighten the personalization in your message template.</p>
+    </div>
+  </div>
+
+  <!-- PART 5 SUMMARY -->
+  <div class="panel" id="summary">
+    <div class="summary-card" id="summaryCard">
+      <h2>I let AI roast my LinkedIn profile today. Here's what changed:</h2>
+      <div class="scoreline"><span>Before: 38/100</span><span class="arrow">→</span><span style="color:var(--green);">After: 80/100</span></div>
+      <p style="margin-bottom:10px;font-size:.92rem;"><b>Top 3 mistakes I was making:</b></p>
+      <ol>
+        <li>My headline said "Pursuing B.Tech (CSE)" — a status, not a pitch</li>
+        <li>Real internship work wasn't listed as an Experience entry at all</li>
+        <li>JavaScript and HTML/CSS weren't in my Skills — despite being my core stack</li>
+      </ol>
+      <div class="highlight"><b>The #1 thing that made the biggest difference:</b> Adding my UptoSkills internship as a real Experience entry — work I'd already done, just invisible until now.</div>
+      <button class="copy-btn" id="copySummary">Copy for LinkedIn</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+document.getElementById('copySummary').addEventListener('click', ()=>{
+  const text = `I let AI roast my LinkedIn profile today. Here's what changed:
+
+Before: 38/100
+After: 80/100
+
+Top 3 mistakes I was making:
+1. My headline said "Pursuing B.Tech (CSE)" — a status, not a pitch
+2. Real internship work wasn't listed as an Experience entry at all
+3. JavaScript and HTML/CSS weren't in my Skills — despite being my core stack
+
+The #1 thing that made the biggest difference: Adding my UptoSkills internship as a real Experience entry — work I'd already done, just invisible until now.`;
+  navigator.clipboard.writeText(text).then(()=>showToast('Summary copied — ready to post'));
+});
+
+(function(){
+  var l=document.createElement('link');
+  l.rel='stylesheet';
+  l.href='https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap';
+  document.head.appendChild(l);
+})();
+</script>
+</body>
+</html>
