@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-main:#0f0f14;
+    --bg-card:#1a1a24;
+    --bg-card-alt:#1e1e2e;
+    --text-primary:#f0f0f5;
+    --text-secondary:#8888a0;
+    --accent-green:#34d399;
+    --accent-red:#f87171;
+    --accent-blue:#60a5fa;
+    --accent-gold:#fbbf24;
+    --accent-purple:#a78bfa;
+    --border-subtle:rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg-main);
+    color:var(--text-primary);
+    font-family:'Inter','Segoe UI',system-ui,sans-serif;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+  header.banner{
+    text-align:center;
+    padding:32px 16px 20px;
+  }
+  header.banner h1{
+    font-size:28px;font-weight:800;margin:0 0 8px;letter-spacing:.5px;
+  }
+  header.banner .subtitle{
+    font-size:16px;color:var(--text-secondary);margin:0 0 6px;
+  }
+  header.banner .date{
+    font-size:12px;color:var(--text-secondary);
+  }
+  .gradient-line{
+    height:2px;width:100%;margin:20px 0 32px;
+    background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple),var(--accent-gold));
+    border-radius:2px;
+  }
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border-subtle);
+    border-radius:16px;
+    padding:28px;
+    margin-bottom:28px;
+    box-shadow:0 4px 24px rgba(0,0,0,0.3);
+    transition:transform .2s ease;
+    border-left:4px solid var(--accent-blue);
+  }
+  .card:hover{transform:translateY(-2px);}
+  .card h2{
+    font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+    margin:0 0 16px;
+  }
+  .card p{font-size:15px;line-height:1.7;margin:0 0 10px;color:var(--text-primary);}
+  .label{font-size:12px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;}
+
+  #s1{border-left-color:var(--accent-blue);}
+  #s1 h2{color:var(--accent-blue);}
+
+  #s2{border-left-color:var(--accent-green);}
+  #s2 h2{color:var(--accent-green);}
+  .opt-card{
+    background:var(--bg-card-alt);border-radius:12px;padding:18px;margin-bottom:16px;border:1px solid var(--border-subtle);
+  }
+  .opt-card:last-child{margin-bottom:0;}
+  .opt-card h3{margin:0 0 10px;font-size:16px;font-weight:700;}
+  .opt-card .tag{display:inline-block;margin-top:8px;font-size:12px;color:var(--text-secondary);}
+
+  #s3{border-left-color:var(--accent-purple);}
+  #s3 h2{color:var(--accent-purple);}
+  ul.clean{margin:0 0 14px;padding-left:20px;}
+  ul.clean li{font-size:15px;line-height:1.7;margin-bottom:6px;}
+
+  #s4{border-left-color:var(--accent-blue);}
+  #s4 h2{color:var(--accent-blue);}
+  .matrix-row{display:flex;align-items:center;margin-bottom:14px;}
+  .matrix-label{width:40%;font-size:13px;color:var(--text-secondary);padding-right:10px;}
+  .matrix-bars{width:60%;display:flex;flex-direction:column;gap:6px;}
+  .bar-container{height:26px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;position:relative;}
+  .bar-fill{
+    height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;
+    padding-right:8px;color:#fff;font-weight:700;font-size:12px;
+    width:0%;animation:grow 0.8s ease-out forwards;
+  }
+  @keyframes grow{from{width:0%;}to{width:var(--target);}}
+  .bar-a{background:linear-gradient(90deg,#60a5fa,#3b82f6);}
+  .bar-b{background:linear-gradient(90deg,#34d399,#10b981);}
+  .bar-c{background:linear-gradient(90deg,#a78bfa,#8b5cf6);}
+  .legend{display:flex;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+  .legend span{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .total-row{
+    margin-top:18px;padding-top:14px;border-top:1px solid var(--border-subtle);
+    display:flex;justify-content:space-between;font-size:15px;font-weight:700;
+  }
+  .winner-badge{color:var(--accent-gold);font-size:12px;font-weight:700;margin-left:6px;}
+
+  #s5{border-left-color:var(--accent-red);}
+  #s5 h2{color:var(--accent-red);}
+  .premortem-block{margin-bottom:18px;}
+  .premortem-block:last-child{margin-bottom:0;}
+  .premortem-block h3{font-size:15px;margin:0 0 8px;color:var(--text-primary);}
+
+  #s6{border-left-color:var(--accent-green);}
+  #s6 h2{color:var(--accent-green);}
+  .day-row{display:flex;gap:10px;margin-bottom:10px;font-size:14px;line-height:1.6;}
+  .day-tag{flex-shrink:0;width:70px;font-weight:700;color:var(--accent-green);font-size:12px;padding-top:2px;}
+
+  #s7{
+    border-left-color:var(--accent-gold);
+    background:var(--bg-card-alt);
+    padding:32px;
+    box-shadow:0 0 20px rgba(251,191,36,0.15), 0 4px 24px rgba(0,0,0,0.3);
+  }
+  #s7 h2{color:var(--accent-gold);}
+  .verdict-name{font-size:30px;font-weight:800;color:var(--accent-gold);margin:0 0 14px;}
+  .hard-truth{font-style:italic;color:var(--text-secondary);margin-top:16px;}
+
+  #s8{border-left-color:var(--accent-gold);}
+  #s8 h2{color:var(--accent-gold);}
+  .mini-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .mini-card{
+    flex:1 1 200px;background:var(--bg-card-alt);padding:16px;border-radius:12px;
+    border:1px solid var(--border-subtle);display:flex;flex-direction:column;justify-content:space-between;min-height:170px;
+  }
+  .mini-card h4{font-size:12px;text-transform:uppercase;color:var(--text-secondary);margin:0 0 10px;letter-spacing:.5px;}
+  .mini-card .mini-body{font-size:14px;line-height:1.5;}
+  .watermark{font-size:10px;color:var(--text-secondary);margin-top:12px;opacity:.7;}
+
+  footer{
+    text-align:center;color:var(--text-secondary);font-size:12px;margin-top:40px;
+  }
+
+  @media(max-width:600px){
+    .card{padding:20px 16px;}
+    header.banner h1{font-size:24px;}
+    .matrix-row{flex-direction:column;align-items:flex-start;}
+    .matrix-label{width:100%;margin-bottom:8px;}
+    .matrix-bars{width:100%;}
+    .mini-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="banner">
+    <h1>DECISION REPORT</h1>
+    <div class="subtitle">Job Now vs. More Prep Time — Choosing Your Path After B.Tech</div>
+    <div class="date">Generated August 10, 2026</div>
+  </header>
+  <div class="gradient-line"></div>
+
+  <!-- SECTION 1 -->
+  <div class="card" id="s1">
+    <h2>The Real Decision</h2>
+    <p>It's not really "job vs. more prep" — it's whether you trust yourself to build skills <em>while</em> employed, or whether you believe only isolated prep time gets you competitive.</p>
+    <p>The trade-off: speed to income and career start, versus risk of landing a role that doesn't match where you actually want to go.</p>
+    <p>It's emotionally hard because fear of rejection is doing the deciding, not your actual goals.</p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="card" id="s2">
+    <h2>The Case For Each Option</h2>
+
+    <div class="opt-card">
+      <h3 style="color:var(--accent-blue)">Option A — Apply Now</h3>
+      <p><strong>Strongest case:</strong> Income and real-world experience start compounding immediately. You learn faster on the job than in isolated prep.</p>
+      <p><strong>Hidden upside:</strong> Even a "not perfect fit" first role builds interview reps, references, and clarity on what you actually want next.</p>
+      <p><strong>Biggest weakness:</strong> You may land something misaligned with React/frontend goals and feel stuck restarting the search later.</p>
+      <div class="tag">Best if you value: momentum, financial independence, learning-by-doing</div>
+    </div>
+
+    <div class="opt-card">
+      <h3 style="color:var(--accent-purple)">Option B — Prep Longer</h3>
+      <p><strong>Strongest case:</strong> You close the React gap fully, walk in more competitive, and increase odds of landing a role that fits long-term.</p>
+      <p><strong>Hidden upside:</strong> More polished portfolio (your 60-day challenge) becomes a stronger differentiator in applications.</p>
+      <p><strong>Biggest weakness:</strong> Delays income, and "more prep" can quietly become indefinite avoidance driven by fear, not readiness.</p>
+      <div class="tag">Best if you value: precision, confidence walking in, long-term fit</div>
+    </div>
+
+    <div class="opt-card">
+      <h3 style="color:var(--accent-green)">Option C — Parallel Track (your gut pick)</h3>
+      <p><strong>Strongest case:</strong> You apply now while continuing to build skills — no artificial either/or, momentum on both fronts.</p>
+      <p><strong>Hidden upside:</strong> Applying now generates real feedback (interviews, rejections, gaps revealed) that directs your prep far better than guessing alone.</p>
+      <p><strong>Biggest weakness:</strong> Splitting focus can dilute both efforts if not structured with clear boundaries.</p>
+      <div class="tag">Best if you value: adaptability, real-world feedback, avoiding analysis paralysis</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="card" id="s3">
+    <h2>Assumption Buster</h2>
+    <p class="label">Assumptions you may be making</p>
+    <ul class="clean">
+      <li>That "not being good enough yet" is a fixed state, not a moving target you close by doing.</li>
+      <li>That applying now and choosing "the wrong path" are permanent — you already said yourself it's reversible.</li>
+      <li>That competitive opportunities require perfect preparation rather than demonstrated growth in motion.</li>
+    </ul>
+    <p class="label">Biases at play</p>
+    <ul class="clean">
+      <li><strong>Loss aversion:</strong> the fear of "wasting time" looms larger than the equally real cost of delaying income and experience.</li>
+      <li><strong>Status quo bias:</strong> staying in "prep mode" feels safer than putting yourself in front of rejection, even though your gut already picked action.</li>
+    </ul>
+    <p class="label">What you're definitely ignoring</p>
+    <p>You already answered this — your gut said "both." The indecision isn't about which path; it's about giving yourself permission to act on fear-laced ground.</p>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="card" id="s4">
+    <h2>Decision Matrix</h2>
+    <div class="legend">
+      <span><i class="dot" style="background:#60a5fa"></i>Apply Now</span>
+      <span><i class="dot" style="background:#34d399"></i>Prep Longer</span>
+      <span><i class="dot" style="background:#a78bfa"></i>Parallel Track</span>
+    </div>
+
+    <div id="matrix"></div>
+
+    <div class="total-row">
+      <span>Total (out of 70)</span>
+      <span>A: 42 &nbsp; B: 41 &nbsp; C: 54 <span class="winner-badge">← WINNER</span></span>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="card" id="s5">
+    <h2>Premortem</h2>
+    <div class="premortem-block">
+      <h3 style="color:var(--accent-blue)">Option A — Apply Now, failed after 12 months</h3>
+      <ul class="clean">
+        <li>Took first offer out of fear, ended up in a non-React/non-frontend role.</li>
+        <li>No time carved out for skill-building once working, so the React gap widened.</li>
+        <li>Burned out trying to job-hop early without a clear improvement plan.</li>
+      </ul>
+      <p class="label">Early warning sign:</p>
+      <p>You stop learning anything new within your first 60 days on the job.</p>
+      <p class="label">Prevention:</p>
+      <p>Only accept roles with some frontend/React exposure, even partial — not just any offer.</p>
+    </div>
+    <div class="premortem-block">
+      <h3 style="color:var(--accent-green)">Option C — Parallel Track, failed after 12 months</h3>
+      <ul class="clean">
+        <li>Applications and skill-building both got half-effort, neither moved forward.</li>
+        <li>No structure — spent more energy switching contexts than actually doing either.</li>
+        <li>Rejections without a feedback loop, so the same weak spots kept resurfacing.</li>
+      </ul>
+      <p class="label">Early warning sign:</p>
+      <p>After a month, you can't point to a single completed skill milestone or a single real interview.</p>
+      <p class="label">Prevention:</p>
+      <p>Set a weekly split (e.g., fixed hours for applications, fixed hours for React) and track both separately.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="card" id="s6">
+    <h2>7-Day Test Plan</h2>
+    <div class="day-row"><div class="day-tag">DAY 1-2</div><div>Audit current resume + portfolio against 5 real frontend intern/junior job postings — list the exact React gaps.</div></div>
+    <div class="day-row"><div class="day-tag">DAY 3-4</div><div>Run one small experiment: apply to 3 roles as-is, while building one focused React feature into an existing project.</div></div>
+    <div class="day-row"><div class="day-tag">DAY 5-6</div><div>Have one conversation — a mentor, senior dev, or recruiter — asking directly what would make your profile job-ready today.</div></div>
+    <div class="day-row"><div class="day-tag">DAY 7</div><div>Decision day: if you got any interview traction or clear positive feedback, commit to Parallel Track for the next 3 months.</div></div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="card" id="s7">
+    <h2>The Verdict</h2>
+    <div class="verdict-name">Parallel Track</div>
+    <p>It wins because it removes the false choice driving your indecision — you don't have to pick between income and growth. It also converts fear of rejection into real, usable feedback instead of endless prep.</p>
+    <p><strong>What could flip it:</strong> If early applications bring zero traction after 3-4 weeks despite genuine effort, that's a signal to shift more weight toward focused React prep before continuing to apply.</p>
+    <p class="hard-truth">The hard truth: you already knew the answer — you're not stuck on the decision, you're stuck on giving yourself permission to be rejected while you're still learning.</p>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="card" id="s8">
+    <h2>Shareable Cards</h2>
+    <div class="mini-row">
+      <div class="mini-card">
+        <h4>Matrix Summary</h4>
+        <div class="mini-body">
+          Apply Now: <strong>42/70</strong><br>
+          Prep Longer: <strong>41/70</strong><br>
+          Parallel Track: <strong style="color:var(--accent-gold)">54/70</strong>
+        </div>
+        <div class="watermark">Built with Claude AI</div>
+      </div>
+      <div class="mini-card">
+        <h4>Verdict</h4>
+        <div class="mini-body">
+          <strong style="color:var(--accent-gold)">Parallel Track wins.</strong><br>
+          Apply now, build React skills alongside — real feedback beats endless prep.
+        </div>
+        <div class="watermark">Built with Claude AI</div>
+      </div>
+      <div class="mini-card">
+        <h4>LinkedIn Hook</h4>
+        <div class="mini-body">
+          "I asked AI to challenge my career decision instead of comfort me."<br><br>
+          Turns out I already knew the answer — I was just scared to act on it.<br>
+          What decision have you been overthinking?
+        </div>
+        <div class="watermark">Built with Claude AI</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Built with Claude AI | ABTalks 60-Day Challenge</footer>
+</div>
+
+<script>
+  const dims = [
+    {label:"Life/Career Upside", a:6, b:7, c:8},
+    {label:"Financial Safety", a:7, b:4, c:6},
+    {label:"Growth & Learning", a:5, b:8, c:8},
+    {label:"Stress Level (10=low)", a:5, b:6, c:5},
+    {label:"Reversibility (10=easy)", a:7, b:8, c:8},
+    {label:"Long-term Alignment", a:5, b:6, c:9},
+    {label:"Regret Risk (10=low)", a:7, b:2, c:10}
+  ];
+
+  const matrixEl = document.getElementById('matrix');
+  let delay = 0;
+  dims.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'matrix-row';
+    row.innerHTML = `
+      <div class="matrix-label">${d.label}</div>
+      <div class="matrix-bars">
+        <div class="bar-container"><div class="bar-fill bar-a" style="--target:${d.a*10}%; animation-delay:${delay}s;">${d.a}</div></div>
+        <div class="bar-container"><div class="bar-fill bar-b" style="--target:${d.b*10}%; animation-delay:${delay+0.1}s;">${d.b}</div></div>
+        <div class="bar-container"><div class="bar-fill bar-c" style="--target:${d.c*10}%; animation-delay:${delay+0.2}s;">${d.c}</div></div>
+      </div>
+    `;
+    matrixEl.appendChild(row);
+    delay += 0.15;
+  });
+</script>
+
+</body>
+</html>
