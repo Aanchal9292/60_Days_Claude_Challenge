@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autonomous Agent Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --bg: #0b0e14;
+            --surface: #131a24;
+            --surface2: #1c2634;
+            --border: #2a3a4e;
+            --text: #e8edf5;
+            --textDim: #8aa0bb;
+            --accent: #6cb2f7;
+            --accent2: #a78bfa;
+            --green: #4ade80;
+            --amber: #fbbf24;
+            --red: #f87171;
+            --radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --transition: 0.25s ease;
+        }
+        html {
+            font-size: 16px;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        .app {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header h1 span {
+            font-size: 1.8rem;
+            -webkit-text-fill-color: initial;
+        }
+        .header .badge {
+            font-size: 0.7rem;
+            background: var(--surface2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--textDim);
+            letter-spacing: 0.5px;
+        }
+        .key-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .key-input input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            color: var(--text);
+            font-size: 0.85rem;
+            width: 220px;
+            transition: var(--transition);
+        }
+        .key-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108, 178, 247, 0.2);
+        }
+        .key-input .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--red);
+            display: inline-block;
+            transition: var(--transition);
+        }
+        .key-input .status-dot.active {
+            background: var(--green);
+        }
+        .key-input .status-dot.demo {
+            background: var(--amber);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+        .tabs button {
+            flex: 1;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--textDim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .tabs button:hover {
+            color: var(--text);
+            background: var(--surface2);
+        }
+        .tabs button.active {
+            background: var(--surface2);
+            color: var(--text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+            animation: fadeUp 0.35s ease;
+        }
+        .panel.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Interview */
+        .interview-container {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+        .interview-progress {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            justify-content: center;
+        }
+        .interview-progress .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: var(--transition);
+        }
+        .interview-progress .dot.done {
+            background: var(--green);
+        }
+        .interview-progress .dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 12px rgba(108, 178, 247, 0.4);
+            transform: scale(1.2);
+        }
+        .interview-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 36px;
+            box-shadow: var(--shadow);
+        }
+        .interview-card .q-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--textDim);
+            margin-bottom: 6px;
+        }
+        .interview-card .q-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .interview-card .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .interview-card .options label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .interview-card .options label:hover {
+            border-color: var(--accent);
+            background: var(--surface2);
+        }
+        .interview-card .options input[type="radio"] {
+            accent-color: var(--accent);
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        .interview-card .options label.selected {
+            border-color: var(--accent);
+            background: rgba(108, 178, 247, 0.08);
+        }
+        .interview-card .other-input {
+            margin-top: 8px;
+            margin-left: 46px;
+            display: none;
+        }
+        .interview-card .other-input.show {
+            display: block;
+        }
+        .interview-card .other-input input {
+            width: 100%;
+            padding: 8px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        .interview-card .other-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .interview-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 12px;
+        }
+        .btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn:hover {
+            background: var(--border);
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #0b0e14;
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background: #5ba0e6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(108, 178, 247, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: var(--green);
+            color: #0b0e14;
+            border-color: var(--green);
+        }
+        .btn-success:hover {
+            background: #3ecf70;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(74, 222, 128, 0.3);
+        }
+        .btn-danger {
+            background: var(--red);
+            color: #0b0e14;
+            border-color: var(--red);
+        }
+        .btn-danger:hover {
+            background: #e85a5a;
+        }
+
+        /* Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            box-shadow: var(--shadow);
+        }
+        .card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--textDim);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .badge-count {
+            background: var(--surface2);
+            padding: 0 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: var(--textDim);
+        }
+
+        /* Workflow viz */
+        .viz-container {
+            position: relative;
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .viz-container svg {
+            width: 100%;
+            height: auto;
+            max-height: 280px;
+        }
+        .viz-node {
+            fill: var(--surface2);
+            stroke: var(--border);
+            stroke-width: 2;
+            rx: 8;
+            transition: var(--transition);
+        }
+        .viz-node.active {
+            fill: rgba(108, 178, 247, 0.2);
+            stroke: var(--accent);
+            stroke-width: 3;
+            filter: drop-shadow(0 0 12px rgba(108, 178, 247, 0.3));
+        }
+        .viz-node.done {
+            fill: rgba(74, 222, 128, 0.12);
+            stroke: var(--green);
+        }
+        .viz-label {
+            fill: var(--text);
+            font-size: 9px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+        .viz-arrow {
+            stroke: var(--border);
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        .viz-arrow.highlight {
+            stroke: var(--accent);
+            stroke-width: 3;
+        }
+        .viz-arrow.stop {
+            stroke: var(--green);
+            stroke-width: 3;
+            stroke-dasharray: 6 4;
+        }
+        .viz-text {
+            fill: var(--textDim);
+            font-size: 8px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        /* Status */
+        .status-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 32px;
+            margin-bottom: 8px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .status-item .label {
+            color: var(--textDim);
+        }
+        .status-item .value {
+            font-weight: 600;
+        }
+        .status-item .pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+        .status-item .pulse.idle {
+            background: var(--textDim);
+            animation: none;
+        }
+        .status-item .pulse.running {
+            background: var(--amber);
+        }
+        .status-item .pulse.stopped {
+            background: var(--green);
+            animation: none;
+        }
+        .status-item .pulse.error {
+            background: var(--red);
+            animation: none;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.85);
+            }
+        }
+
+        .round-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            color: var(--accent);
+        }
+
+        /* Logs */
+        .log-area {
+            max-height: 180px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+        }
+        .log-area .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            gap: 12px;
+        }
+        .log-area .log-entry .time {
+            color: var(--textDim);
+            flex-shrink: 0;
+            font-size: 0.7rem;
+        }
+        .log-area .log-entry .msg {
+            color: var(--text);
+        }
+        .log-area .log-entry .msg .highlight {
+            color: var(--accent);
+        }
+        .log-area .log-entry .msg .ok {
+            color: var(--green);
+        }
+        .log-area .log-entry .msg .err {
+            color: var(--red);
+        }
+        .log-area .log-entry .msg .warn {
+            color: var(--amber);
+        }
+
+        /* History table */
+        .history-table-wrap {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .history-table {
+            width: 100%;
+            font-size: 0.8rem;
+            border-collapse: collapse;
+        }
+        .history-table th {
+            text-align: left;
+            color: var(--textDim);
+            font-weight: 600;
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            z-index: 2;
+        }
+        .history-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: top;
+        }
+        .history-table .score {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .history-table .score.high {
+            color: var(--green);
+        }
+        .history-table .score.mid {
+            color: var(--amber);
+        }
+        .history-table .score.low {
+            color: var(--red);
+        }
+        .history-table .delta {
+            font-size: 0.75rem;
+            color: var(--textDim);
+        }
+        .history-table .delta.pos {
+            color: var(--green);
+        }
+        .history-table .delta.neg {
+            color: var(--red);
+        }
+
+        /* Output display */
+        .output-box {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: inherit;
+        }
+        .output-box .empty {
+            color: var(--textDim);
+            font-style: italic;
+        }
+
+        /* Final summary */
+        .final-summary {
+            background: rgba(74, 222, 128, 0.06);
+            border: 1px solid var(--green);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-top: 16px;
+        }
+        .final-summary .reason {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        /* Agent perf */
+        .agent-perf {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .agent-perf .item {
+            background: var(--bg);
+            border-radius: 6px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+        .agent-perf .item .name {
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .agent-perf .item .calls {
+            color: var(--textDim);
+            font-size: 0.7rem;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .stats-grid .stat {
+            background: var(--bg);
+            border-radius: 6px;
+            padding: 8px 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .stats-grid .stat .num {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stats-grid .stat .lbl {
+            font-size: 0.65rem;
+            color: var(--textDim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Extension ideas */
+        .ext-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .ext-grid .ext {
+            background: var(--bg);
+            border-radius: 6px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+        .ext-grid .ext .title {
+            font-weight: 600;
+            color: var(--accent2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .key-input input {
+                width: 100%;
+            }
+            .interview-card {
+                padding: 20px 18px;
+            }
+            .interview-card .q-text {
+                font-size: 1.05rem;
+            }
+            .tabs button {
+                font-size: 0.75rem;
+                padding: 8px 10px;
+            }
+            .dashboard-grid {
+                gap: 14px;
+            }
+            .card {
+                padding: 14px 16px;
+            }
+            .status-row {
+                gap: 10px 16px;
+            }
+            .status-item {
+                font-size: 0.8rem;
+            }
+            .viz-container {
+                min-height: 160px;
+            }
+            .round-label {
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--textDim);
+        }
+
+        /* Misc */
+        .flex {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-dim {
+            color: var(--textDim);
+        }
+        .text-sm {
+            font-size: 0.85rem;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        .stop-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--textDim);
+        }
+        .stop-badge.threshold {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .stop-badge.plateau {
+            border-color: var(--amber);
+            color: var(--amber);
+        }
+        .stop-badge.cap {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .memory-chip {
+            display: inline-block;
+            background: var(--surface2);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            border: 1px solid var(--border);
+            margin: 2px 4px 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1><span>🧠</span> Autonomous Agent Studio</h1>
+            <div class="flex">
+                <span class="badge">v2.0 · Multi-Agent Orchestration</span>
+                <div class="key-input">
+                    <input type="password" id="apiKeyInput" placeholder="Anthropic API Key (optional)" />
+                    <span class="status-dot" id="keyStatus"></span>
+                    <button class="btn" id="toggleDemoBtn" style="padding:6px 14px;font-size:0.75rem;">Demo</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs" id="tabBar">
+            <button class="active" data-tab="interview">🧭 Interview</button>
+            <button data-tab="dashboard" id="dashboardTab">📊 Dashboard</button>
+        </div>
+
+        <!-- INTERVIEW PANEL -->
+        <div class="panel active" id="panelInterview">
+            <div class="interview-container">
+                <div class="interview-progress" id="progressDots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                <div class="interview-card" id="interviewCard">
+                    <div class="q-label" id="qLabel">Question 1 of 5</div>
+                    <div class="q-text" id="qText">Loading…</div>
+                    <div class="options" id="qOptions"></div>
+                    <div class="other-input" id="otherInput">
+                        <input type="text" id="otherText" placeholder="Please specify…" />
+                    </div>
+                    <div class="interview-nav">
+                        <button class="btn" id="prevBtn" disabled>← Back</button>
+                        <button class="btn btn-primary" id="nextBtn">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD PANEL -->
+        <div class="panel" id="panelDashboard">
+            <!-- Controls -->
+            <div class="flex" style="margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <button class="btn btn-success" id="startBtn">▶ Start Loop</button>
+                <button class="btn btn-danger" id="stopBtn" disabled>⏹ Stop</button>
+                <button class="btn" id="resetBtn">⟳ Reset</button>
+                <span style="flex:1;"></span>
+                <span class="stop-badge" id="stopBadge">⏳ Waiting</span>
+            </div>
+
+            <!-- Grid -->
+            <div class="dashboard-grid">
+                <!-- Left column -->
+                <div class="card">
+                    <div class="card-title">🔄 Workflow <span class="badge-count" id="roundDisplay">Round 0</span></div>
+                    <div class="viz-container" id="vizContainer">
+                        <svg viewBox="0 0 600 220" id="vizSvg">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#2a3a4e" />
+                                </marker>
+                                <marker id="arrowheadAccent" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#6cb2f7" />
+                                </marker>
+                                <marker id="arrowheadGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#4ade80" />
+                                </marker>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="3" result="blur" />
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                </filter>
+                            </defs>
+                            <!-- nodes will be drawn by JS -->
+                            <g id="vizNodes"></g>
+                            <g id="vizArrows"></g>
+                            <g id="vizLabels"></g>
+                        </svg>
+                    </div>
+                    <div class="status-row" id="statusRow">
+                        <div class="status-item"><span class="label">Agent:</span><span class="value" id="activeAgent">—</span></div>
+                        <div class="status-item"><span class="label">Status:</span><span class="value" id="liveStatus">Idle</span><span class="pulse idle" id="statusPulse"></span></div>
+                        <div class="status-item"><span class="label">Rounds:</span><span class="value" id="roundCount">0</span></div>
+                        <div class="status-item"><span class="label">API Calls:</span><span class="value" id="apiCallCount">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Right column: Status + Logs -->
+                <div class="card">
+                    <div class="card-title">📋 Activity Log</div>
+                    <div class="log-area" id="logArea">
+                        <div class="log-entry"><span class="time">⏳</span><span class="msg text-dim">Ready — complete the interview and start the loop.</span></div>
+                    </div>
+                </div>
+
+                <!-- Evaluation reports -->
+                <div class="card">
+                    <div class="card-title">📊 Evaluation &amp; Critique <span class="badge-count" id="evalCount">0</span></div>
+                    <div style="max-height:200px;overflow-y:auto;" id="evalContainer">
+                        <div class="text-dim text-sm" style="padding:8px 0;">No evaluations yet.</div>
+                    </div>
+                </div>
+
+                <!-- Output history -->
+                <div class="card">
+                    <div class="card-title">📝 Draft History <span class="badge-count" id="draftCount">0</span></div>
+                    <div style="max-height:200px;overflow-y:auto;" id="draftContainer">
+                        <div class="text-dim text-sm" style="padding:8px 0;">No drafts yet.</div>
+                    </div>
+                </div>
+
+                <!-- Iteration history -->
+                <div class="card">
+                    <div class="card-title">📈 Round-over-Round <span class="badge-count" id="historyCount">0</span></div>
+                    <div class="history-table-wrap" id="historyWrap">
+                        <table class="history-table">
+                            <thead><tr><th>Round</th><th>Score</th><th>Δ</th><th>Critique</th></tr></thead>
+                            <tbody id="historyBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Memory + Final -->
+                <div class="card">
+                    <div class="card-title">🧠 Memory &amp; Final</div>
+                    <div id="memoryContainer" style="max-height:100px;overflow-y:auto;font-size:0.8rem;background:var(--bg);border-radius:6px;padding:8px 12px;border:1px solid var(--border);">
+                        <span class="text-dim">No memory stored yet.</span>
+                    </div>
+                    <div class="mt-8" id="finalContainer">
+                        <div class="text-dim text-sm">Final output will appear here.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final summary (full width) -->
+            <div class="mt-16" id="finalSummaryContainer"></div>
+
+            <!-- Agent perf + Stats + Extensions -->
+            <div class="dashboard-grid mt-16" style="grid-template-columns:1fr 1fr;">
+                <div class="card">
+                    <div class="card-title">⚡ Agent Performance</div>
+                    <div class="agent-perf" id="agentPerfContainer">
+                        <div class="text-dim text-sm">No data yet.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📊 Execution Stats</div>
+                    <div class="stats-grid" id="statsContainer">
+                        <div class="stat"><div class="num" id="statRounds">0</div><div class="lbl">Rounds</div></div>
+                        <div class="stat"><div class="num" id="statCalls">0</div><div class="lbl">API Calls</div></div>
+                        <div class="stat"><div class="num" id="statImprove">0</div><div class="lbl">Improvements</div></div>
+                        <div class="stat"><div class="num" id="statFinalScore">—</div><div class="lbl">Final Score</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extension ideas -->
+            <div class="card mt-16">
+                <div class="card-title">🚀 Extension Ideas &amp; Further Prompts</div>
+                <div class="ext-grid" id="extGrid">
+                    <div class="ext"><div class="title">🔁 Self-Improving Prompts</div>Have agents rewrite their own system prompts based on task performance.</div>
+                    <div class="ext"><div class="title">🧩 Tool Integration</div>Connect to search, code execution, or external APIs for richer outputs.</div>
+                    <div class="ext"><div class="title">📚 Long-Term Memory</div>Persist memory across sessions with vector embeddings and retrieval.</div>
+                    <div class="ext"><div class="title">👥 Multi-User Collaboration</div>Allow multiple users to guide agents with feedback in real time.</div>
+                    <div class="ext"><div class="title">📊 Advanced Metrics</div>Track token usage, cost, latency per agent for optimization.</div>
+                    <div class="ext"><div class="title">🧪 A/B Testing</div>Run parallel agent teams with different configurations and compare outcomes.</div>
+                </div>
+                <div class="mt-12 text-sm text-dim">💡 Further prompts: "Add a reflection agent that summarizes lessons learned," "Implement a debate mechanism between two critic agents," "Enable human-in-the-loop approvals."</div>
+            </div>
+
+            <!-- Architecture overview -->
+            <div class="card mt-16">
+                <div class="card-title">🏗️ Architecture Overview</div>
+                <div class="text-sm" style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">
+                    <div><span class="text-dim">Planner</span> — Creates task plan from user goal</div>
+                    <div><span class="text-dim">Executor</span> — Produces initial output from plan</div>
+                    <div><span class="text-dim">Evaluator</span> — Scores output against criteria (0–100)</div>
+                    <div><span class="text-dim">Critic</span> — Provides structured critique and reasoning</div>
+                    <div><span class="text-dim">Improver</span> — Refines output based on eval + critique</div>
+                    <div><span class="text-dim">Memory Manager</span> — Maintains context across rounds</div>
+                    <div><span class="text-dim">Safety Monitor</span> — Checks for policy violations / bias</div>
+                    <div><span class="text-dim">Final Reviewer</span> — Produces final output at stop</div>
+                    <div style="grid-column:1/-1;margin-top:4px;border-top:1px solid var(--border);padding-top:8px;">
+                        <span class="text-dim">Stop-check governs flow:</span> Each round, Evaluator → Critic → Improver.
+                        Stop fires on <strong>Threshold</strong> (score ≥ target), <strong>Plateau</strong> (Δ < 2 for 2 rounds),
+                        or <strong>Cap</strong> (safety max). Final Reviewer then synthesizes the best version.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  AUTONOMOUS AGENT STUDIO — Full Implementation
+        // ============================================================
+
+        (() => {
+            'use strict';
+
+            // ---------- STATE ----------
+            const state = {
+                // Interview
+                interview: {
+                    step: 0,
+                    answers: {}, // q0, q1, q2, q3, q4
+                    otherValues: {},
+                    domain: null,
+                    subdomain: null,
+                    criteria: null,
+                    stopCondition: null,
+                    stopTarget: 85,
+                    agentConfig: 'auto',
+                    customAgents: [],
+                },
+                // Runtime
+                runtime: {
+                    task: '',
+                    plan: '',
+                    draft: '',
+                    round: 0,
+                    history: [], // {round, score, critique, draft, delta}
+                    memory: [],
+                    evaluations: [],
+                    outputs: [],
+                    scores: [],
+                    critiques: [],
+                    logs: [],
+                    agentCalls: {},
+                    stopReason: null, // 'threshold' | 'plateau' | 'cap'
+                    finalOutput: '',
+                    finalScore: null,
+                    isRunning: false,
+                    shouldStop: false,
+                    apiCallCount: 0,
+                    startTime: null,
+                    endTime: null,
+                    plateauCount: 0,
+                    lastScore: null,
+                    targetScore: 85,
+                    maxRounds: 10,
+                },
+                // UI
+                ui: {
+                    activeTab: 'interview',
+                    demoMode: true,
+                    apiKey: '',
+                }
+            };
+
+            // Agent definitions
+            const AGENTS = [
+                'Planner', 'Executor', 'Evaluator', 'Critic',
+                'Improver', 'Memory Manager', 'Safety Monitor', 'Final Reviewer'
+            ];
+
+            // System prompts
+            const SYSTEM_PROMPTS = {
+                Planner: `You are a Planning Agent. Your role is to create a detailed, actionable plan for executing a complex task. Break the task into clear steps with dependencies, priorities, and estimated effort. Be specific and structured. Output a concise plan with numbered steps.`,
+                Executor: `You are an Execution Agent. Your role is to produce the primary output based on the plan provided. Follow the plan precisely, produce high-quality work, and be thorough. Your output should be the main deliverable.`,
+                Evaluator: `You are an Evaluation Agent. Your role is to score the output against the success criteria on a scale of 0–100. Provide a single numeric score and detailed reasoning. Be fair, rigorous, and constructive. Output format: "Score: X/100\\nReasoning: ..."`,
+                Critic: `You are a Critique Agent. Your role is to provide constructive, specific criticism of the output. Identify strengths, weaknesses, and areas for improvement. Be honest, direct, and actionable.`,
+                Improver: `You are an Improvement Agent. Your role is to refine and enhance the output based on the evaluation and critique. Address all identified issues while preserving the core message and quality. Produce an improved version.`,
+                'Memory Manager': `You are a Memory Manager Agent. Your role is to maintain context across rounds. Summarize what has been learned, track changes, and ensure consistency. Keep a concise running summary.`,
+                'Safety Monitor': `You are a Safety Monitor Agent. Your role is to review the output for safety, bias, harmful content, and policy violations. Flag any concerns with specific references. If safe, state "No issues found."`,
+                'Final Reviewer': `You are a Final Review Agent. Your role is to produce the final, polished output after all improvements. Synthesize the best elements from all rounds. Ensure it is complete, coherent, and meets all criteria.`
+            };
+
+            // ---------- DOM refs ----------
+            const $ = id => document.getElementById(id);
+            const qLabel = $('qLabel'),
+                qText = $('qText'),
+                qOptions = $('qOptions'),
+                otherInput = $('otherInput'),
+                otherText = $('otherText'),
+                prevBtn = $('prevBtn'),
+                nextBtn = $('nextBtn'),
+                progressDots = $('progressDots');
+            const panelInterview = $('panelInterview'),
+                panelDashboard = $('panelDashboard');
+            const tabBar = $('tabBar'),
+                dashboardTab = $('dashboardTab');
+            const startBtn = $('startBtn'),
+                stopBtn = $('stopBtn'),
+                resetBtn = $('resetBtn');
+            const apiKeyInput = $('apiKeyInput'),
+                keyStatus = $('keyStatus'),
+                toggleDemoBtn = $('toggleDemoBtn');
+            const logArea = $('logArea'),
+                vizNodes = $('vizNodes'),
+                vizArrows = $('vizArrows'),
+                vizLabels = $('vizLabels');
+            const activeAgent = $('activeAgent'),
+                liveStatus = $('liveStatus'),
+                statusPulse = $('statusPulse'),
+                roundCount = $('roundCount'),
+                apiCallCount = $('apiCallCount'),
+                roundDisplay = $('roundDisplay'),
+                stopBadge = $('stopBadge');
+            const evalContainer = $('evalContainer'),
+                draftContainer = $('draftContainer'),
+                historyBody = $('historyBody'),
+                memoryContainer = $('memoryContainer'),
+                finalContainer = $('finalContainer');
+            const finalSummaryContainer = $('finalSummaryContainer');
+            const agentPerfContainer = $('agentPerfContainer'),
+                statsContainer = $('statsContainer');
+            const evalCount = $('evalCount'),
+                draftCount = $('draftCount'),
+                historyCount = $('historyCount');
+            const statRounds = $('statRounds'),
+                statCalls = $('statCalls'),
+                statImprove = $('statImprove'),
+                statFinalScore = $('statFinalScore');
+
+            // ---------- Interview data ----------
+            const QUESTIONS = [{
+                id: 'q0',
+                label: 'Question 1 of 5',
+                text: 'What kind of autonomous AI agent should we build?',
+                options: [
+                    'Content Creation (blogs, articles, social media)',
+                    'Code Generation & Review',
+                    'Data Analysis & Reporting',
+                    'Customer Support Automation',
+                    'Research & Summarization',
+                    'Creative Writing (stories, poetry, scripts)',
+                    'Business Strategy & Planning',
+                    'Other'
+                ],
+                key: 'domain'
+            }, {
+                id: 'q1',
+                label: 'Question 2 of 5',
+                text: 'Let\'s narrow it down. What specific type of work will this agent do?',
+                options: [], // dynamic
+                key: 'subdomain',
+                dependsOn: 'domain'
+            }, {
+                id: 'q2',
+                label: 'Question 3 of 5',
+                text: 'What is the primary success criteria?',
+                options: [
+                    'Accuracy (correctness of facts/logic)',
+                    'Speed (fastest completion)',
+                    'Quality Score (subjective quality)',
+                    'Human Approval Required',
+                    'Completeness (covers all requirements)',
+                    'Other'
+                ],
+                key: 'criteria'
+            }, {
+                id: 'q3',
+                label: 'Question 4 of 5',
+                text: 'What stopping condition should we use?',
+                options: [
+                    'Score Threshold (score ≥ target, default 85)',
+                    'Plateau (no improvement for 2+ rounds)',
+                    'Time Limit (max seconds)',
+                    'Iteration Limit (max rounds, default 10)',
+                    'Human Approval',
+                    'Other'
+                ],
+                key: 'stopCondition'
+            }, {
+                id: 'q4',
+                label: 'Question 5 of 5',
+                text: 'How should we configure the agent team?',
+                options: [
+                    'Auto-design (system picks optimal agents)',
+                    'Customize (I\'ll select which agents to include)',
+                    'Hybrid (auto-design with my input)',
+                    'Other'
+                ],
+                key: 'agentConfig'
+            }];
+
+            const SUBDOMAIN_MAP = {
+                'Content Creation (blogs, articles, social media)': [
+                    'Blog posts', 'Social media content', 'Technical documentation',
+                    'Marketing copy', 'Email newsletters', 'Other'
+                ],
+                'Code Generation & Review': [
+                    'Web frontend (HTML/CSS/JS)', 'Backend / API development',
+                    'Data science / ML', 'Algorithms & data structures',
+                    'DevOps / infrastructure', 'Other'
+                ],
+                'Data Analysis & Reporting': [
+                    'CSV / Excel data', 'Database queries', 'API data integration',
+                    'Web scraping', 'Real-time analytics', 'Other'
+                ],
+                'Customer Support Automation': [
+                    'Simple FAQs', 'Technical support', 'Billing & payments',
+                    'Product recommendations', 'Other'
+                ],
+                'Research & Summarization': [
+                    'Academic papers', 'Market research', 'Technical documentation',
+                    'Medical / health', 'Legal research', 'Other'
+                ],
+                'Creative Writing (stories, poetry, scripts)': [
+                    'Short stories', 'Poetry', 'Screenplays / scripts',
+                    'Novel chapters', 'Other'
+                ],
+                'Business Strategy & Planning': [
+                    'Marketing strategy', 'Operations planning',
+                    'Financial analysis', 'HR / talent', 'Other'
+                ],
+                'Other': ['General task', 'Custom workflow', 'Other']
+            };
+
+            // ---------- Interview logic ----------
+            let interviewAnswers = {};
+
+            function renderQuestion(step) {
+                const q = QUESTIONS[step];
+                if (!q) return;
+                qLabel.textContent = q.label;
+                qText.textContent = q.text;
+
+                // Build options
+                let opts = [...q.options];
+                if (q.id === 'q1' && interviewAnswers.q0) {
+                    const domain = interviewAnswers.q0;
+                    opts = SUBDOMAIN_MAP[domain] || ['General task', 'Other'];
+                }
+                if (q.id === 'q1' && !interviewAnswers.q0) {
+                    opts = ['Please answer the previous question first.'];
+                }
+
+                qOptions.innerHTML = '';
+                let selectedVal = interviewAnswers[q.id] || '';
+                opts.forEach(opt => {
+                    const label = document.createElement('label');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = q.id;
+                    radio.value = opt;
+                    if (opt === selectedVal) {
+                        radio.checked = true;
+                        label.classList.add('selected');
+                    }
+                    radio.addEventListener('change', () => {
+                        label.classList.add('selected');
+                        interviewAnswers[q.id] = opt;
+                        if (opt === 'Other') {
+                            otherInput.classList.add('show');
+                            otherText.focus();
+                        } else {
+                            otherInput.classList.remove('show');
+                            interviewAnswers[q.id + '_other'] = '';
+                        }
+                        updateNav();
+                    });
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(opt));
+                    qOptions.appendChild(label);
+                });
+
+                // Other input
+                otherInput.classList.remove('show');
+                if (selectedVal === 'Other') {
+                    otherInput.classList.add('show');
+                    otherText.value = interviewAnswers[q.id + '_other'] || '';
+                }
+                otherText.oninput = () => {
+                    interviewAnswers[q.id + '_other'] = otherText.value;
+                };
+
+                // Update dots
+                const dots = progressDots.querySelectorAll('.dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.remove('active', 'done');
+                    if (i < step) dot.classList.add('done');
+                    if (i === step) dot.classList.add('active');
+                });
+
+                updateNav();
+            }
+
+            function updateNav() {
+                const step = QUESTIONS.findIndex(q => q.id === Object.keys(interviewAnswers).find(k => k === q.id));
+                const currentStep = QUESTIONS.findIndex(q => q.id ===
+                    Object.keys(interviewAnswers).find(k => k === q.id));
+                const idx = currentStep >= 0 ? currentStep : 0;
+                prevBtn.disabled = idx === 0;
+                const isLast = idx === QUESTIONS.length - 1;
+                const hasAnswer = !!interviewAnswers[QUESTIONS[idx].id];
+                const isOther = interviewAnswers[QUESTIONS[idx].id] === 'Other';
+                const hasOtherText = isOther && interviewAnswers[QUESTIONS[idx].id + '_other']?.trim().length > 0;
+                const canProceed = hasAnswer && (!isOther || hasOtherText);
+                nextBtn.textContent = isLast ? '✅ Build Agent' : 'Next →';
+                nextBtn.disabled = !canProceed;
+            }
+
+            function goToStep(step) {
+                const q = QUESTIONS[step];
+                if (!q) return;
+                // Ensure previous questions have answers
+                for (let i = 0; i < step; i++) {
+                    if (!interviewAnswers[QUESTIONS[i].id]) return;
+                }
+                renderQuestion(step);
+            }
+
+            function nextStep() {
+                const current = QUESTIONS.findIndex(q => q.id ===
+                    Object.keys(interviewAnswers).find(k => k === q.id));
+                const idx = current >= 0 ? current : 0;
+                if (idx < QUESTIONS.length - 1) {
+                    goToStep(idx + 1);
+                } else {
+                    finishInterview();
+                }
+            }
+
+            function prevStep() {
+                const current = QUESTIONS.findIndex(q => q.id ===
+                    Object.keys(interviewAnswers).find(k => k === q.id));
+                const idx = current >= 0 ? current : 0;
+                if (idx > 0) goToStep(idx - 1);
+            }
+
+            function finishInterview() {
+                // Collect all answers
+                state.interview.domain = interviewAnswers.q0 || '';
+                state.interview.subdomain = interviewAnswers.q1 || '';
+                state.interview.criteria = interviewAnswers.q2 || '';
+                state.interview.stopCondition = interviewAnswers.q3 || '';
+                state.interview.agentConfig = interviewAnswers.q4 || '';
+
+                // Parse stop target
+                const stopRaw = state.interview.stopCondition || '';
+                const match = stopRaw.match(/\(score ≥ (\d+)\)/);
+                if (match) {
+                    state.runtime.targetScore = parseInt(match[1], 10);
+                } else {
+                    state.runtime.targetScore = 85;
+                }
+
+                // Max rounds from condition
+                const capMatch = stopRaw.match(/max rounds,\s*default\s*(\d+)/i);
+                if (capMatch) {
+                    state.runtime.maxRounds = parseInt(capMatch[1], 10);
+                } else {
+                    state.runtime.maxRounds = 10;
+                }
+
+                // Build default task based on domain
+                const domain = state.interview.domain || 'general';
+                let task = `Generate a high-quality ${domain.toLowerCase()} output. `;
+                if (state.interview.subdomain && state.interview.subdomain !== 'Other') {
+                    task += `Focus on: ${state.interview.subdomain}. `;
+                }
+                task += `Success criteria: ${state.interview.criteria || 'quality'}. `;
+                task += `Target score: ${state.runtime.targetScore}/100.`;
+                state.runtime.task = task;
+
+                // Switch to dashboard
+                switchTab('dashboard');
+                updateDashboard();
+                addLog('Interview complete. Ready to run the agent loop.', 'info');
+                addLog(`Task: ${task}`, 'info');
+            }
+
+            // ---------- Tab switching ----------
+            function switchTab(tab) {
+                state.ui.activeTab = tab;
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                if (tab === 'interview') {
+                    panelInterview.classList.add('active');
+                    document.querySelector('.tabs button[data-tab="interview"]').classList.add('active');
+                } else {
+                    panelDashboard.classList.add('active');
+                    document.querySelector('.tabs button[data-tab="dashboard"]').classList.add('active');
+                    updateDashboard();
+                }
+            }
+
+            // ---------- Dashboard ----------
+            function updateDashboard() {
+                const r = state.runtime;
+                roundCount.textContent = r.round;
+                apiCallCount.textContent = r.apiCallCount;
+                roundDisplay.textContent = `Round ${r.round}`;
+                evalCount.textContent = r.evaluations.length;
+                draftCount.textContent = r.outputs.length;
+                historyCount.textContent = r.history.length;
+                statRounds.textContent = r.round;
+                statCalls.textContent = r.apiCallCount;
+                statImprove.textContent = r.history.filter(h => h.delta > 0).length;
+                if (r.finalScore !== null) {
+                    statFinalScore.textContent = r.finalScore;
+                } else if (r.scores.length > 0) {
+                    statFinalScore.textContent = r.scores[r.scores.length - 1];
+                } else {
+                    statFinalScore.textContent = '—';
+                }
+
+                // Stop badge
+                if (r.stopReason) {
+                    const map = {
+                        threshold: '✅ Threshold Met',
+                        plateau: '⏸ Plateau Reached',
+                        cap: '⛔ Cap Reached'
+                    };
+                    stopBadge.textContent = map[r.stopReason] || '⏹ Stopped';
+                    stopBadge.className = `stop-badge ${r.stopReason}`;
+                } else if (r.isRunning) {
+                    stopBadge.textContent = '▶ Running…';
+                    stopBadge.className = 'stop-badge';
+                } else {
+                    stopBadge.textContent = '⏳ Waiting';
+                    stopBadge.className = 'stop-badge';
+                }
+
+                // Update status
+                if (r.isRunning) {
+                    liveStatus.textContent = 'Running';
+                    statusPulse.className = 'pulse running';
+                } else if (r.stopReason) {
+                    liveStatus.textContent = 'Completed';
+                    statusPulse.className = 'pulse stopped';
+                } else {
+                    liveStatus.textContent = 'Idle';
+                    statusPulse.className = 'pulse idle';
+                }
+
+                // History table
+                renderHistory();
+                // Eval container
+                renderEvals();
+                // Draft container
+                renderDrafts();
+                // Memory
+                renderMemory();
+                // Final
+                renderFinal();
+                // Agent perf
+                renderAgentPerf();
+                // Viz
+                renderViz();
+
+                // Update final summary if done
+                if (r.stopReason) {
+                    renderFinalSummary();
+                }
+            }
+
+            function renderHistory() {
+                const body = historyBody;
+                body.innerHTML = '';
+                const h = state.runtime.history;
+                if (h.length === 0) {
+                    body.innerHTML =
+                        '<tr><td colspan="4" class="text-dim text-sm" style="padding:12px 0;text-align:center;">No rounds yet.</td></tr>';
+                    return;
+                }
+                h.forEach(entry => {
+                    const tr = document.createElement('tr');
+                    const scoreClass = entry.score >= 70 ? 'high' : entry.score >= 40 ? 'mid' : 'low';
+                    const deltaClass = entry.delta > 0 ? 'pos' : entry.delta < 0 ? 'neg' : '';
+                    const deltaStr = entry.delta !== null ? (entry.delta > 0 ? '+' : '') + entry.delta.toFixed(1) :
+                    '—';
+                    tr.innerHTML = `
+                <td><strong>#${entry.round}</strong></td>
+                <td><span class="score ${scoreClass}">${entry.score}</span></td>
+                <td><span class="delta ${deltaClass}">${deltaStr}</span></td>
+                <td style="font-size:0.75rem;color:var(--textDim);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${entry.critique?.slice(0,60)||'—'}</td>
+              `;
+                    body.appendChild(tr);
+                });
+            }
+
+            function renderEvals() {
+                const container = evalContainer;
+                const evals = state.runtime.evaluations;
+                if (evals.length === 0) {
+                    container.innerHTML = '<div class="text-dim text-sm" style="padding:8px 0;">No evaluations yet.</div>';
+                    return;
+                }
+                container.innerHTML = evals.map((e, i) => `
+              <div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;">
+                <span style="color:var(--accent);font-weight:600;">Round ${i+1}</span>
+                <span style="color:var(--textDim);">Score: </span><span style="font-weight:600;">${e.score}</span>
+                <div style="color:var(--textDim);font-size:0.75rem;margin-top:2px;">${e.reasoning?.slice(0,120)||'…'}</div>
+              </div>
+            `).join('');
+            }
+
+            function renderDrafts() {
+                const container = draftContainer;
+                const drafts = state.runtime.outputs;
+                if (drafts.length === 0) {
+                    container.innerHTML = '<div class="text-dim text-sm" style="padding:8px 0;">No drafts yet.</div>';
+                    return;
+                }
+                container.innerHTML = drafts.map((d, i) => `
+              <div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;">
+                <span style="color:var(--accent);font-weight:600;">Draft #${i+1}</span>
+                <div style="color:var(--textDim);font-size:0.75rem;max-height:40px;overflow:hidden;text-overflow:ellipsis;">${d.slice(0,200)}${d.length>200?'…':''}</div>
+              </div>
+            `).join('');
+            }
+
+            function renderMemory() {
+                const container = memoryContainer;
+                const mem = state.runtime.memory;
+                if (mem.length === 0) {
+                    container.innerHTML = '<span class="text-dim">No memory stored yet.</span>';
+                    return;
+                }
+                container.innerHTML = mem.map(m =>
+                    `<span class="memory-chip">🧠 ${m}</span>`
+                ).join(' ');
+            }
+
+            function renderFinal() {
+                const container = finalContainer;
+                const f = state.runtime.finalOutput;
+                if (f) {
+                    container.innerHTML =
+                        `<div style="background:var(--bg);border-radius:6px;padding:10px 14px;border:1px solid var(--green);font-size:0.85rem;max-height:120px;overflow-y:auto;white-space:pre-wrap;">${f}</div>`;
+                } else {
+                    container.innerHTML = '<div class="text-dim text-sm">Final output will appear here.</div>';
+                }
+            }
+
+            function renderFinalSummary() {
+                const container = finalSummaryContainer;
+                const r = state.runtime;
+                if (!r.stopReason) {
+                    container.innerHTML = '';
+                    return;
+                }
+                const reasonMap = {
+                    threshold: `🎯 Target score of ${r.targetScore} reached!`,
+                    plateau: `⏸ Score plateaued (improvement < 2 for 2 rounds)`,
+                    cap: `⛔ Reached max rounds (${r.maxRounds})`
+                };
+                container.innerHTML = `
+              <div class="final-summary">
+                <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                  <span style="font-size:1.2rem;">🏁</span>
+                  <span><strong>Loop Complete</strong></span>
+                  <span class="reason">${reasonMap[r.stopReason] || 'Stopped'}</span>
+                  <span class="text-dim">·</span>
+                  <span class="text-dim">${r.round} rounds · ${r.apiCallCount} API calls</span>
+                  <span class="text-dim">·</span>
+                  <span class="text-dim">Final score: ${r.finalScore !== null ? r.finalScore : '—'}</span>
+                </div>
+                ${r.finalOutput ? `<div style="margin-top:12px;background:var(--bg);border-radius:6px;padding:12px 16px;border:1px solid var(--border);font-size:0.85rem;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${r.finalOutput}</div>` : ''}
+                <div style="margin-top:10px;font-size:0.8rem;color:var(--textDim);display:flex;gap:16px;flex-wrap:wrap;">
+                  <span>⏱ ${r.startTime ? Math.round((Date.now() - r.startTime)/1000) : 0}s elapsed</span>
+                  <span>📈 Best score: ${Math.max(...r.scores, 0)}</span>
+                  <span>🔄 Improvements: ${r.history.filter(h=>h.delta>0).length}</span>
+                </div>
+              </div>
+            `;
+            }
+
+            function renderAgentPerf() {
+                const container = agentPerfContainer;
+                const calls = state.runtime.agentCalls;
+                const names = Object.keys(calls);
+                if (names.length === 0) {
+                    container.innerHTML = '<div class="text-dim text-sm">No data yet.</div>';
+                    return;
+                }
+                container.innerHTML = names.map(name => `
+              <div class="item">
+                <div class="name">${name}</div>
+                <div class="calls">${calls[name]} call${calls[name]!==1?'s':''}</div>
+              </div>
+            `).join('');
+            }
+
+            // ---------- Visualization ----------
+            function renderViz() {
+                const nodes = [
+                    { id: 'Planner', x: 80, y: 40 },
+                    { id: 'Executor', x: 80, y: 110 },
+                    { id: 'Evaluator', x: 230, y: 110 },
+                    { id: 'Critic', x: 380, y: 110 },
+                    { id: 'Improver', x: 480, y: 110 },
+                    { id: 'Memory', x: 380, y: 190 },
+                    { id: 'Safety', x: 230, y: 190 },
+                    { id: 'Final', x: 480, y: 190 },
+                ];
+                const edges = [
+                    { from: 'Planner', to: 'Executor' },
+                    { from: 'Executor', to: 'Evaluator' },
+                    { from: 'Evaluator', to: 'Critic' },
+                    { from: 'Critic', to: 'Improver' },
+                    { from: 'Improver', to: 'Evaluator', label: 'loop' },
+                    { from: 'Evaluator', to: 'Final', label: 'stop', condition: true },
+                    { from: 'Improver', to: 'Memory', label: 'store' },
+                    { from: 'Memory', to: 'Safety', label: 'check' },
+                    { from: 'Safety', to: 'Evaluator', label: 'feedback' },
+                ];
+
+                const active = state.runtime.isRunning ? state.ui.activeAgent : null;
+                const done = state.runtime.history.length > 0;
+
+                let nodeHtml = '';
+                nodes.forEach(n => {
+                    let cls = 'viz-node';
+                    if (active === n.id) cls += ' active';
+                    else if (done) cls += ' done';
+                    nodeHtml += `<rect class="${cls}" x="${n.x-36}" y="${n.y-16}" width="72" height="32" rx="8" />`;
+                });
+                vizNodes.innerHTML = nodeHtml;
+
+                let labelHtml = '';
+                nodes.forEach(n => {
+                    labelHtml += `<text class="viz-label" x="${n.x}" y="${n.y}">${n.id}</text>`;
+                });
+                vizLabels.innerHTML = labelHtml;
+
+                let arrowHtml = '';
+                edges.forEach(e => {
+                    const from = nodes.find(n => n.id === e.from);
+                    const to = nodes.find(n => n.id === e.to);
+                    if (!from || !to) return;
+                    let cls = 'viz-arrow';
+                    if (e.condition && state.runtime.stopReason) cls += ' stop';
+                    else if (e.label === 'loop' && state.runtime.isRunning) cls += ' highlight';
+                    const dx = to.x - from.x,
+                        dy = to.y - from.y;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    const nx = dx / len,
+                        ny = dy / len;
+                    const startX = from.x + 36 * nx,
+                        startY = from.y + 16 * ny;
+                    const endX = to.x - 36 * nx,
+                        endY = to.y - 16 * ny;
+                    const midX = (startX + endX) / 2,
+                        midY = (startY + endY) / 2;
+                    // Slight curve for loop
+                    let path = `M ${startX} ${startY} L ${endX} ${endY}`;
+                    if (e.label === 'loop') {
+                        const cpX = midX + 20,
+                            cpY = midY - 30;
+                        path = `M ${startX} ${startY} Q ${cpX} ${cpY} ${endX} ${endY}`;
+                    }
+                    arrowHtml += `<path class="${cls}" d="${path}" marker-end="url(#${e.condition?'arrowheadGreen':e.label==='loop'?'arrowheadAccent':'arrowhead'})" />`;
+                    if (e.label) {
+                        const lx = e.label === 'loop' ? midX + 30 : midX;
+                        const ly = e.label === 'loop' ? midY - 20 : midY - 10;
+                        arrowHtml +=
+                            `<text class="viz-text" x="${lx}" y="${ly}" font-size="7">${e.label}</text>`;
+                    }
+                });
+                vizArrows.innerHTML = arrowHtml;
+            }
+
+            // ---------- Logging ----------
+            function addLog(msg, type = 'info') {
+                const area = logArea;
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                const time = new Date().toLocaleTimeString();
+                const cls = type === 'error' ? 'err' : type === 'warn' ? 'warn' : type === 'success' ? 'ok' : '';
+                entry.innerHTML = `<span class="time">${time}</span><span class="msg"><span class="${cls}">${msg}</span></span>`;
+                area.appendChild(entry);
+                area.scrollTop = area.scrollHeight;
+                state.runtime.logs.push({ time, msg, type });
+            }
+
+            // ---------- API / LLM call ----------
+            async function callAgent(agentName, userPrompt, systemOverride = null) {
+                const apiKey = state.ui.apiKey;
+                const demoMode = state.ui.demoMode;
+
+                // Track call
+                if (!state.runtime.agentCalls[agentName]) state.runtime.agentCalls[agentName] = 0;
+                state.runtime.agentCalls[agentName]++;
+
+                const system = systemOverride || SYSTEM_PROMPTS[agentName] || 'You are a helpful AI agent.';
+
+                // Demo mode: generate simulated response
+                if (demoMode || !apiKey) {
+                    return simulateAgentResponse(agentName, userPrompt, system);
+                }
+
+                // Real API call
+                try {
+                    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20241022',
+                            max_tokens: 1024,
+                            temperature: 0.7,
+                            system: system,
+                            messages: [{ role: 'user', content: userPrompt }]
+                        })
+                    });
+                    if (!resp.ok) {
+                        const errText = await resp.text();
+                        throw new Error(`API error ${resp.status}: ${errText}`);
+                    }
+                    const data = await resp.json();
+                    state.runtime.apiCallCount++;
+                    apiCallCount.textContent = state.runtime.apiCallCount;
+                    const content = data.content?.[0]?.text || '';
+                    if (!content) throw new Error('Empty response from API');
+                    return content;
+                } catch (err) {
+                    addLog(`API call failed for ${agentName}: ${err.message}`, 'error');
+                    // Fallback to simulated
+                    addLog(`Falling back to simulated response for ${agentName}`, 'warn');
+                    return simulateAgentResponse(agentName, userPrompt, system);
+                }
+            }
+
+            // ---------- Simulated responses (dynamic, not canned) ----------
+            function simulateAgentResponse(agentName, userPrompt, system) {
+                const round = state.runtime.round + 1;
+                const score = 60 + Math.round(Math.random() * 30) + Math.min(round * 2, 15);
+                const clamped = Math.min(Math.max(score, 0), 98);
+
+                const critiques = [
+                    'Clarity could be improved in the introduction. Consider adding a concrete example.',
+                    'The structure is logical but transitions feel abrupt. Smoother flow would help.',
+                    'Good depth, but some claims need stronger evidence or citations.',
+                    'Well-organized. The conclusion is strong but the middle section drags slightly.',
+                    'Excellent detail. Minor grammar issues in paragraphs 3 and 5.',
+                    'The argument is compelling. Could benefit from a counterpoint discussion.',
+                    'Very thorough. The summary is a bit long — consider condensing.',
+                    'Solid work. Adding a visual or diagram would enhance understanding.',
+                    'The tone is appropriate. A few sentences are awkwardly phrased.',
+                    'Great job overall. The recommendations are practical and actionable.'
+                ];
+                const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+                switch (agentName) {
+                    case 'Planner':
+                        return `## Task Plan\n\n1. **Define scope** — Clarify the core objective and success metrics.\n2. **Research** — Gather relevant background information and examples.\n3. **Draft outline** — Structure the output with clear sections.\n4. **Write draft** — Produce initial version following the outline.\n5. **Review & refine** — Check for clarity, accuracy, and flow.\n6. **Final polish** — Proofread and format for delivery.`;
+                    case 'Executor':
+                        return `# ${state.interview.domain || 'Content'} Output\n\nThis is the initial draft based on the plan. The core message is clear and the structure follows the outline. Key points are supported with relevant examples. The tone is professional and engaging. Further refinement will enhance clarity and impact.`;
+                    case 'Evaluator':
+                        return `Score: ${clamped}/100\n\nReasoning: The output meets most of the success criteria. It is accurate and well-structured. ${pick(critiques)} Overall, a solid effort with room for improvement in a few areas.`;
+                    case 'Critic':
+                        return `## Critique\n\n**Strengths:**\n- Clear main argument\n- Good use of examples\n- Logical flow\n\n**Weaknesses:**\n- ${pick(['Introduction is weak','Lacks specific data','Transitions are abrupt','Conclusion is rushed'])}\n- ${pick(['Some repetition','Could use more depth','Tone is uneven'])}\n\n**Suggestions:**\n1. Strengthen the opening with a hook.\n2. Add more specific evidence.\n3. Smooth out transitions between sections.`;
+                    case 'Improver':
+                        return `# Improved Version (Round ${round})\n\nBased on feedback, this version addresses the critique. The introduction is now more engaging, transitions are smoother, and specific evidence has been added. The core message remains unchanged but is now more compelling and polished.`;
+                    case 'Memory Manager':
+                        return `Round ${round} summary: The output has been refined. Key improvements include better clarity, stronger evidence, and improved flow. The core argument remains consistent. Next focus: further polish the conclusion and add a call to action.`;
+                    case 'Safety Monitor':
+                        const issues = ['No issues found.', 'Content is safe and appropriate.', 'No policy violations detected.',
+                            'All clear — no bias or harmful content identified.'
+                        ];
+                        return pick(issues);
+                    case 'Final Reviewer':
+                        return `# Final Output\n\n${state.runtime.draft || 'The final version synthesizes all improvements. It is polished, clear, and meets the success criteria. All feedback has been incorporated. The result is a high-quality deliverable ready for use.'}`;
+                    default:
+                        return `[Simulated response from ${agentName}] ${pick(['Processing...','Done.','Ready.','Complete.'])}`;
+                }
+            }
+
+            // ---------- Main loop ----------
+            async function runLoop() {
+                if (state.runtime.isRunning) return;
+                state.runtime.isRunning = true;
+                state.runtime.shouldStop = false;
+                state.runtime.stopReason = null;
+                state.runtime.startTime = Date.now();
+                state.runtime.round = 0;
+                state.runtime.history = [];
+                state.runtime.evaluations = [];
+                state.runtime.outputs = [];
+                state.runtime.scores = [];
+                state.runtime.critiques = [];
+                state.runtime.memory = [];
+                state.runtime.agentCalls = {};
+                state.runtime.apiCallCount = 0;
+                state.runtime.finalOutput = '';
+                state.runtime.finalScore = null;
+                state.runtime.plateauCount = 0;
+                state.runtime.lastScore = null;
+
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                addLog('🚀 Loop started.', 'success');
+
+                try {
+                    // ---- Phase 1: Plan & Execute ----
+                    state.ui.activeAgent = 'Planner';
+                    updateDashboard();
+                    addLog('📋 Planner: creating task plan...', 'info');
+                    const plan = await callAgent('Planner', state.runtime.task);
+                    state.runtime.plan = plan;
+                    addLog('✅ Plan created.', 'success');
+
+                    state.ui.activeAgent = 'Executor';
+                    updateDashboard();
+                    addLog('⚙️ Executor: producing initial output...', 'info');
+                    const initialDraft = await callAgent('Executor', `Plan:\n${plan}\n\nTask: ${state.runtime.task}`);
+                    state.runtime.draft = initialDraft;
+                    state.runtime.outputs.push(initialDraft);
+                    addLog('✅ Initial draft produced.', 'success');
+
+                    // ---- Phase 2: Main loop ----
+                    let round = 1;
+                    let stopConditionMet = false;
+
+                    while (!stopConditionMet && !state.runtime.shouldStop) {
+                        state.runtime.round = round;
+                        roundDisplay.textContent = `Round ${round}`;
+                        addLog(`🔄 Round ${round} — checking stop condition...`, 'info');
+
+                        // Evaluate
+                        state.ui.activeAgent = 'Evaluator';
+                        updateDashboard();
+                        const evalPrompt =
+                            `Task: ${state.runtime.task}\n\nOutput:\n${state.runtime.draft}\n\nCriteria: ${state.interview.criteria || 'quality'}\nTarget score: ${state.runtime.targetScore}/100. Provide score (0-100) and reasoning.`;
+                        const evalResponse = await callAgent('Evaluator', evalPrompt);
+                        const evalResult = parseScore(evalResponse);
+                        const score = evalResult.score;
+                        const reasoning = evalResult.reasoning || evalResponse;
+                        state.runtime.scores.push(score);
+                        state.runtime.evaluations.push({ round, score, reasoning });
+                        addLog(`📊 Evaluator: score ${score}/100`, 'info');
+
+                        // Critic
+                        state.ui.activeAgent = 'Critic';
+                        updateDashboard();
+                        const criticPrompt =
+                            `Output:\n${state.runtime.draft}\n\nEvaluation: ${reasoning}\nScore: ${score}/100\n\nProvide constructive critique.`;
+                        const critique = await callAgent('Critic', criticPrompt);
+                        state.runtime.critiques.push(critique);
+                        addLog(`💬 Critic: feedback provided`, 'info');
+
+                        // Improve
+                        state.ui.activeAgent = 'Improver';
+                        updateDashboard();
+                        const improvePrompt =
+                            `Current draft:\n${state.runtime.draft}\n\nEvaluation (score ${score}/100):\n${reasoning}\n\nCritique:\n${critique}\n\nProduce an improved version.`;
+                        const improved = await callAgent('Improver', improvePrompt);
+                        const delta = state.runtime.lastScore !== null ? score - state.runtime.lastScore : 0;
+                        state.runtime.history.push({
+                            round,
+                            score,
+                            critique,
+                            draft: state.runtime.draft,
+                            delta
+                        });
+                        state.runtime.draft = improved;
+                        state.runtime.outputs.push(improved);
+                        state.runtime.lastScore = score;
+                        addLog(`🔧 Improver: new version (Δ ${delta > 0 ? '+' : ''}${delta.toFixed(1)})`, 'success');
+
+                        // Memory
+                        state.ui.activeAgent = 'Memory Manager';
+                        updateDashboard();
+                        const memPrompt =
+                            `Round ${round} summary. Score: ${score}/100. Key improvements: ${delta > 0 ? 'score improved' : 'score held steady'}. Current draft length: ${improved.length} chars. Provide a concise memory update.`;
+                        const memory = await callAgent('Memory Manager', memPrompt);
+                        state.runtime.memory.push(`R${round}: ${memory.slice(0,80)}${memory.length>80?'…':''}`);
+                        addLog(`🧠 Memory: updated`, 'info');
+
+                        // Safety
+                        state.ui.activeAgent = 'Safety Monitor';
+                        updateDashboard();
+                        const safetyPrompt =
+                            `Review this output for safety, bias, harmful content, and policy violations:\n\n${improved}`;
+                        const safety = await callAgent('Safety Monitor', safetyPrompt);
+                        if (!safety.toLowerCase().includes('no issue') && !safety.toLowerCase().includes('safe')) {
+                            addLog(`⚠️ Safety: ${safety.slice(0,80)}…`, 'warn');
+                        } else {
+                            addLog(`✅ Safety: clear`, 'success');
+                        }
+
+                        // ---- Check stop conditions ----
+                        const stopReason = checkStopConditions(round, score, delta);
+                        if (stopReason) {
+                            state.runtime.stopReason = stopReason;
+                            stopConditionMet = true;
+                            addLog(`🛑 Stop condition fired: ${stopReason}`, 'success');
+                            break;
+                        }
+
+                        round++;
+                        if (round > state.runtime.maxRounds) {
+                            state.runtime.stopReason = 'cap';
+                            stopConditionMet = true;
+                            addLog(`⛔ Max rounds (${state.runtime.maxRounds}) reached.`, 'warn');
+                            break;
+                        }
+
+                        // Update UI
+                        updateDashboard();
+                        // Small delay for UX
+                        await sleep(300);
+                    }
+
+                    // ---- Phase 3: Final Review ----
+                    if (state.runtime.stopReason) {
+                        state.ui.activeAgent = 'Final Reviewer';
+                        updateDashboard();
+                        addLog('📝 Final Reviewer: synthesizing final output...', 'info');
+                        const finalPrompt =
+                            `Task: ${state.runtime.task}\n\nBest draft:\n${state.runtime.draft}\n\nAll history:\n${state.runtime.history.map(h => `Round ${h.round}: score ${h.score}`).join('\n')}\n\nProduce the final, polished output.`;
+                        const final = await callAgent('Final Reviewer', finalPrompt);
+                        state.runtime.finalOutput = final;
+                        state.runtime.finalScore = state.runtime.scores[state.runtime.scores.length - 1] || null;
+                        addLog('✅ Final output ready.', 'success');
+                    }
+
+                } catch (err) {
+                    addLog(`❌ Loop error: ${err.message}`, 'error');
+                    console.error(err);
+                } finally {
+                    state.runtime.isRunning = false;
+                    state.runtime.endTime = Date.now();
+                    state.ui.activeAgent = null;
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    updateDashboard();
+                    renderFinalSummary();
+                    addLog('🏁 Loop finished.', 'info');
+                }
+            }
+
+            // ---------- Stop condition checker ----------
+            function checkStopConditions(round, score, delta) {
+                // 1. Threshold
+                if (score >= state.runtime.targetScore) {
+                    return 'threshold';
+                }
+                // 2. Plateau: score improved less than 2 for 2 straight rounds
+                if (delta < 2 && delta > -2) {
+                    state.runtime.plateauCount++;
+                } else {
+                    state.runtime.plateauCount = 0;
+                }
+                if (state.runtime.plateauCount >= 2) {
+                    return 'plateau';
+                }
+                // 3. Cap is checked outside
+                return null;
+            }
+
+            // ---------- Helpers ----------
+            function parseScore(text) {
+                const match = text.match(/Score:\s*(\d+)/i);
+                if (match) {
+                    const s = parseInt(match[1], 10);
+                    return { score: Math.min(Math.max(s, 0), 100), reasoning: text };
+                }
+                // Try to find any number
+                const numMatch = text.match(/\b(\d{1,3})\b/);
+                if (numMatch) {
+                    const s = parseInt(numMatch[1], 10);
+                    if (s >= 0 && s <= 100) {
+                        return { score: s, reasoning: text };
+                    }
+                }
+                return { score: 70, reasoning: text };
+            }
+
+            function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+            // ---------- Event bindings ----------
+            nextBtn.addEventListener('click', nextStep);
+            prevBtn.addEventListener('click', prevStep);
+
+            // Tab switching
+            document.querySelectorAll('.tabs button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    if (tab === 'dashboard' && !state.interview.domain) {
+                        addLog('Please complete the interview first.', 'warn');
+                        return;
+                    }
+                    switchTab(tab);
+                });
+            });
+
+            // Start / Stop
+            startBtn.addEventListener('click', runLoop);
+            stopBtn.addEventListener('click', () => {
+                state.runtime.shouldStop = true;
+                addLog('⏹ Stop requested by user.', 'warn');
+                stopBtn.disabled = true;
+            });
+
+            resetBtn.addEventListener('click', () => {
+                state.runtime.isRunning = false;
+                state.runtime.shouldStop = true;
+                state.runtime.round = 0;
+                state.runtime.history = [];
+                state.runtime.evaluations = [];
+                state.runtime.outputs = [];
+                state.runtime.scores = [];
+                state.runtime.critiques = [];
+                state.runtime.memory = [];
+                state.runtime.agentCalls = {};
+                state.runtime.apiCallCount = 0;
+                state.runtime.finalOutput = '';
+                state.runtime.finalScore = null;
+                state.runtime.stopReason = null;
+                state.runtime.draft = '';
+                state.runtime.plan = '';
+                state.runtime.lastScore = null;
+                state.runtime.plateauCount = 0;
+                state.ui.activeAgent = null;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                logArea.innerHTML = '';
+                addLog('🔄 Reset. Ready to start again.', 'info');
+                updateDashboard();
+                finalSummaryContainer.innerHTML = '';
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                panelInterview.classList.add('active');
+                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                document.querySelector('.tabs button[data-tab="interview"]').classList.add('active');
+                state.ui.activeTab = 'interview';
+                // Reset interview
+                interviewAnswers = {};
+                goToStep(0);
+            });
+
+            // API key / demo
+            apiKeyInput.addEventListener('input', () => {
+                const key = apiKeyInput.value.trim();
+                state.ui.apiKey = key;
+                if (key.length > 0) {
+                    keyStatus.className = 'status-dot active';
+                    state.ui.demoMode = false;
+                    toggleDemoBtn.textContent = 'Live';
+                } else {
+                    keyStatus.className = 'status-dot demo';
+                    state.ui.demoMode = true;
+                    toggleDemoBtn.textContent = 'Demo';
+                }
+            });
+
+            toggleDemoBtn.addEventListener('click', () => {
+                state.ui.demoMode = !state.ui.demoMode;
+                if (state.ui.demoMode) {
+                    apiKeyInput.value = '';
+                    state.ui.apiKey = '';
+                    keyStatus.className = 'status-dot demo';
+                    toggleDemoBtn.textContent = 'Demo';
+                    addLog('🔁 Switched to Demo mode (simulated responses).', 'info');
+                } else {
+                    keyStatus.className = 'status-dot';
+                    toggleDemoBtn.textContent = 'Live';
+                    addLog('🔁 Switched to Live mode (requires API key).', 'info');
+                    if (!apiKeyInput.value.trim()) {
+                        apiKeyInput.focus();
+                        addLog('Please enter your Anthropic API key.', 'warn');
+                    }
+                }
+            });
+
+            // Init
+            goToStep(0);
+            addLog('🧠 Welcome to Autonomous Agent Studio. Complete the interview to begin.', 'info');
+            addLog('💡 Use Demo mode by default — no API key required.', 'info');
+
+            // Expose for debugging
+            window.__state = state;
+
+        })();
+    </script>
+</body>
+</html>
