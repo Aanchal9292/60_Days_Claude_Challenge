@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Intelligence Studio — Resume & ATS Analyzer</title>
+<style>
+:root{
+  --bg-0:#07090d;
+  --bg-1:#0d1117;
+  --bg-2:#131a24;
+  --bg-3:#1a2330;
+  --line:#242e3d;
+  --line-soft:#1b2330;
+  --amber:#f2b84b;
+  --amber-soft:#f2b84b22;
+  --blue:#5aa9ff;
+  --green:#4ade80;
+  --red:#f87171;
+  --text-0:#eef2f7;
+  --text-1:#aebac9;
+  --text-2:#6d7a8c;
+  --mono:'IBM Plex Mono', 'Courier New', monospace;
+  --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --head:'Space Grotesk', var(--sans);
+  --radius:14px;
+  --shadow-lg:0 20px 60px -20px rgba(0,0,0,0.6);
+}
+@font-face{font-family:'Inter';src:local('Inter');}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--sans);
+  background:
+    radial-gradient(circle at 15% 0%, #1a2330 0%, transparent 45%),
+    radial-gradient(circle at 90% 20%, #16202c 0%, transparent 40%),
+    var(--bg-0);
+  color:var(--text-0);
+  min-height:100vh;
+  line-height:1.5;
+}
+::selection{background:var(--amber-soft);color:var(--amber);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--bg-1);}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+::-webkit-scrollbar-thumb:hover{background:#33415a;}
+
+.container{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+/* ---------- HEADER ---------- */
+header.app-header{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(16px) saturate(140%);
+  background:rgba(7,9,13,0.75);
+  border-bottom:1px solid var(--line-soft);
+}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;max-width:1180px;margin:0 auto;}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#f2b84b,#c98a2b);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--head);font-weight:700;color:#1a1206;font-size:16px;
+  box-shadow:0 0 0 1px #ffffff22 inset, 0 6px 18px -6px #f2b84b66;
+}
+.brand-text h1{font-family:var(--head);font-size:16.5px;font-weight:600;letter-spacing:-0.01em;}
+.brand-text span{font-size:11px;color:var(--text-2);font-family:var(--mono);letter-spacing:0.03em;}
+.status-pill{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 12px;border-radius:100px;
+  background:var(--bg-2);border:1px solid var(--line);
+  font-family:var(--mono);font-size:11.5px;color:var(--text-1);
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text-2);}
+.dot.live{background:var(--green);box-shadow:0 0 8px #4ade8099;animation:pulse 1.6s infinite;}
+.dot.busy{background:var(--amber);box-shadow:0 0 8px #f2b84b99;animation:pulse 1.2s infinite;}
+.dot.err{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+/* ---------- HERO / INTAKE ---------- */
+.hero{padding:56px 0 20px;}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11.5px;color:var(--amber);
+  border:1px solid #f2b84b3a;background:var(--amber-soft);
+  padding:5px 12px;border-radius:100px;margin-bottom:18px;
+}
+.hero h2{font-family:var(--head);font-size:clamp(28px,4vw,42px);font-weight:600;letter-spacing:-0.02em;max-width:720px;}
+.hero p{color:var(--text-1);margin-top:12px;max-width:560px;font-size:15px;}
+
+.brief-strip{
+  display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 8px;
+}
+.chip{
+  font-family:var(--mono);font-size:11.5px;color:var(--text-1);
+  background:var(--bg-2);border:1px solid var(--line);
+  padding:6px 12px;border-radius:8px;
+}
+.chip b{color:var(--text-0);font-weight:600;}
+
+/* ---------- PANEL / CARD BASE ---------- */
+.panel{
+  background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);
+}
+.panel-pad{padding:26px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.panel-head h3{font-family:var(--head);font-size:16px;font-weight:600;}
+.panel-head .sub{font-size:12px;color:var(--text-2);font-family:var(--mono);}
+
+/* ---------- INTAKE FORM ---------- */
+.intake-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:20px;margin-top:20px;}
+@media(max-width:900px){.intake-grid{grid-template-columns:1fr;}}
+
+.field-label{font-size:12.5px;font-weight:600;color:var(--text-1);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.field-label .req{color:var(--amber);}
+
+textarea, input[type=text]{
+  width:100%;background:var(--bg-0);border:1px solid var(--line);
+  border-radius:10px;padding:14px 16px;color:var(--text-0);
+  font-family:var(--mono);font-size:13px;resize:vertical;
+  transition:border-color .15s, box-shadow .15s;
+}
+textarea:focus, input[type=text]:focus{outline:none;border-color:#f2b84b66;box-shadow:0 0 0 3px #f2b84b1c;}
+textarea::placeholder, input::placeholder{color:var(--text-2);}
+textarea#resumeText{min-height:220px;}
+input#jdText{min-height:auto;}
+textarea#jdTextArea{min-height:100px;}
+
+.upload-zone{
+  border:1.5px dashed var(--line);border-radius:12px;
+  padding:26px 18px;text-align:center;cursor:pointer;
+  transition:border-color .15s, background .15s;
+  background:var(--bg-0);
+}
+.upload-zone:hover, .upload-zone.drag{border-color:var(--amber);background:#f2b84b0c;}
+.upload-zone svg{opacity:0.5;margin-bottom:10px;}
+.upload-zone p{font-size:12.5px;color:var(--text-1);}
+.upload-zone .small{font-size:11px;color:var(--text-2);margin-top:4px;font-family:var(--mono);}
+.preview-wrap{margin-top:14px;display:none;position:relative;}
+.preview-wrap img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;}
+.remove-img{
+  position:absolute;top:8px;right:8px;background:#000000cc;color:#fff;
+  border:none;border-radius:8px;width:26px;height:26px;cursor:pointer;font-size:14px;
+}
+
+.severity-row{display:flex;gap:10px;margin-top:8px;}
+.sev-btn{
+  flex:1;padding:11px 8px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg-0);color:var(--text-1);font-size:12px;cursor:pointer;
+  text-align:center;transition:all .15s;font-family:var(--sans);font-weight:500;
+}
+.sev-btn.active{border-color:var(--amber);background:var(--amber-soft);color:var(--amber);}
+
+.cta-row{display:flex;align-items:center;gap:14px;margin-top:24px;}
+.btn-primary{
+  background:linear-gradient(135deg,#f7c869,#e0a12f);
+  color:#20150a;border:none;padding:14px 26px;border-radius:11px;
+  font-weight:700;font-size:14px;cursor:pointer;
+  box-shadow:0 10px 30px -10px #f2b84b77;
+  transition:transform .12s, box-shadow .12s;
+  font-family:var(--sans);
+  display:flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 34px -8px #f2b84b99;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-ghost{
+  background:transparent;border:1px solid var(--line);color:var(--text-1);
+  padding:13px 20px;border-radius:11px;font-size:13px;cursor:pointer;font-weight:500;
+  font-family:var(--sans);transition:all .15s;
+}
+.btn-ghost:hover{border-color:var(--text-2);color:var(--text-0);}
+.hint-err{color:var(--red);font-size:12px;margin-top:8px;font-family:var(--mono);display:none;}
+
+/* ---------- WORKFLOW / ACTIVITY LOG ---------- */
+.workflow-section{display:none;padding:34px 0;}
+.workflow-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;}
+@media(max-width:960px){.workflow-grid{grid-template-columns:1fr;}}
+
+.reviewer-list{display:flex;flex-direction:column;gap:10px;}
+.reviewer-card{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  background:var(--bg-0);border:1px solid var(--line);border-radius:11px;
+  transition:border-color .2s;
+}
+.reviewer-card.active{border-color:#f2b84b66;background:#f2b84b0a;}
+.reviewer-card.done{border-color:#4ade8044;}
+.reviewer-card.error{border-color:#f8717166;}
+.r-icon{
+  width:38px;height:38px;border-radius:9px;background:var(--bg-2);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  border:1px solid var(--line);
+}
+.r-body{flex:1;min-width:0;}
+.r-body .name{font-size:13.5px;font-weight:600;}
+.r-body .desc{font-size:11.5px;color:var(--text-2);font-family:var(--mono);margin-top:2px;}
+.r-state{font-size:11px;font-family:var(--mono);padding:4px 10px;border-radius:100px;white-space:nowrap;}
+.r-state.pending{color:var(--text-2);background:var(--bg-2);}
+.r-state.active{color:var(--amber);background:var(--amber-soft);}
+.r-state.done{color:var(--green);background:#4ade8022;}
+.r-state.error{color:var(--red);background:#f8717122;}
+.mini-spinner{width:11px;height:11px;border:2px solid #f2b84b44;border-top-color:var(--amber);border-radius:50%;display:inline-block;animation:spin 0.7s linear infinite;margin-right:5px;vertical-align:-1px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.activity-log{
+  background:#05070a;border:1px solid var(--line);border-radius:12px;
+  padding:16px;height:100%;max-height:520px;overflow-y:auto;
+  font-family:var(--mono);font-size:11.5px;
+}
+.activity-log .log-title{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
+.log-line{padding:6px 0;border-bottom:1px solid #ffffff08;color:var(--text-1);display:flex;gap:8px;}
+.log-line .t{color:var(--text-2);flex-shrink:0;}
+.log-line.ok .msg{color:var(--green);}
+.log-line.warn .msg{color:var(--amber);}
+.log-line.err .msg{color:var(--red);}
+
+/* ---------- RESULTS ---------- */
+.results-section{display:none;padding:10px 0 80px;}
+.score-hero{
+  display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:center;
+  padding:36px;
+}
+@media(max-width:760px){.score-hero{grid-template-columns:1fr;text-align:center;}}
+.score-ring-wrap{display:flex;justify-content:center;}
+.score-ring{position:relative;width:190px;height:190px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring .bg{stroke:#1a2330;}
+.score-ring .fg{stroke:var(--amber);stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.9,.3,1);}
+.score-num{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.score-num .big{font-family:var(--head);font-size:46px;font-weight:700;letter-spacing:-0.02em;}
+.score-num .lbl{font-size:11px;color:var(--text-2);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.05em;}
+.score-verdict h2{font-family:var(--head);font-size:22px;margin-bottom:8px;}
+.score-verdict p{color:var(--text-1);font-size:14px;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.tag{font-family:var(--mono);font-size:11px;padding:5px 11px;border-radius:100px;border:1px solid var(--line);color:var(--text-1);}
+
+.tabs{display:flex;gap:4px;margin:30px 0 20px;overflow-x:auto;padding-bottom:4px;}
+.tab-btn{
+  padding:10px 18px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg-1);color:var(--text-1);font-size:12.5px;font-weight:600;
+  cursor:pointer;white-space:nowrap;font-family:var(--sans);transition:all .15s;
+}
+.tab-btn.active{background:var(--amber);color:#1a1206;border-color:var(--amber);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:22px;}
+.cat-card{padding:18px;background:var(--bg-0);border:1px solid var(--line);border-radius:12px;}
+.cat-card .cat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cat-card .cat-name{font-size:12.5px;font-weight:600;color:var(--text-1);}
+.cat-card .cat-score{font-family:var(--head);font-size:22px;font-weight:700;}
+.bar-track{height:6px;background:var(--bg-2);border-radius:100px;overflow:hidden;margin-bottom:10px;}
+.bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#f2b84b,#e0a12f);transition:width 1s cubic-bezier(.2,.9,.3,1);}
+.cat-card .cat-note{font-size:12px;color:var(--text-2);line-height:1.5;}
+
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:700px){.swot-grid{grid-template-columns:1fr;}}
+.swot-card{padding:20px;border-radius:12px;border:1px solid var(--line);background:var(--bg-0);}
+.swot-card h4{font-size:13px;font-family:var(--head);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.swot-card.strength h4{color:var(--green);}
+.swot-card.weakness h4{color:var(--red);}
+.swot-card.opportunity h4{color:var(--blue);}
+.swot-card.recommend h4{color:var(--amber);}
+.swot-card ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.swot-card li{font-size:12.8px;color:var(--text-1);line-height:1.5;padding-left:16px;position:relative;}
+.swot-card li::before{content:'—';position:absolute;left:0;color:var(--text-2);}
+
+.rewrite-block{background:var(--bg-0);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;}
+.rewrite-block h4{font-size:12.5px;color:var(--amber);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px;}
+.rewrite-block .content{font-size:13.5px;color:var(--text-0);line-height:1.7;white-space:pre-wrap;font-family:var(--sans);}
+.before-after{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.before-after{grid-template-columns:1fr;}}
+.ba-col h5{font-size:11px;font-family:var(--mono);text-transform:uppercase;color:var(--text-2);margin-bottom:8px;}
+.ba-col.after h5{color:var(--green);}
+.ba-col .box{background:var(--bg-0);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13px;line-height:1.6;min-height:60px;}
+.ba-col.after .box{border-color:#4ade8033;}
+
+.hooks-list{display:flex;flex-direction:column;gap:10px;}
+.hook-item{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:14px 16px;background:var(--bg-0);border:1px solid var(--line);border-radius:10px;
+}
+.hook-item .htext{font-size:13px;flex:1;}
+.copy-btn{
+  background:var(--bg-2);border:1px solid var(--line);color:var(--text-1);
+  padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--mono);flex-shrink:0;
+}
+.copy-btn:hover{border-color:var(--amber);color:var(--amber);}
+
+.checklist{display:flex;flex-direction:column;gap:8px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg-0);border:1px solid var(--line);border-radius:10px;cursor:pointer;}
+.check-item input{margin-top:2px;accent-color:var(--amber);width:15px;height:15px;flex-shrink:0;}
+.check-item span{font-size:13px;color:var(--text-1);}
+.check-item.checked span{text-decoration:line-through;color:var(--text-2);}
+
+.exec-summary{font-size:14.5px;line-height:1.85;color:var(--text-0);white-space:pre-wrap;}
+.impact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px;}
+.impact-card{padding:16px;background:var(--bg-0);border:1px solid var(--line);border-radius:11px;text-align:center;}
+.impact-card .val{font-family:var(--head);font-size:26px;font-weight:700;color:var(--amber);}
+.impact-card .lbl{font-size:11px;color:var(--text-2);margin-top:4px;font-family:var(--mono);}
+.disclaimer{
+  margin-top:20px;padding:12px 16px;background:#f2b84b0d;border:1px solid #f2b84b2e;
+  border-radius:10px;font-size:11.5px;color:var(--text-2);font-family:var(--mono);
+}
+
+.followup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+.followup-card{
+  padding:16px;background:var(--bg-0);border:1px solid var(--line);border-radius:11px;
+  cursor:pointer;transition:border-color .15s;
+}
+.followup-card:hover{border-color:var(--amber);}
+.followup-card .fq-text{font-size:13px;color:var(--text-1);line-height:1.5;}
+.followup-card .fq-tag{font-size:10.5px;color:var(--amber);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;}
+
+.custom-ask{display:flex;gap:10px;margin-top:20px;}
+.custom-ask input{flex:1;}
+
+/* ---------- FOOTER ACTIONS ---------- */
+.report-footer{display:flex;gap:12px;justify-content:center;margin-top:36px;flex-wrap:wrap;}
+
+/* ---------- ERROR / RETRY BANNER ---------- */
+.error-banner{
+  display:none;background:#f871711a;border:1px solid #f8717155;color:#ffb4b4;
+  padding:14px 18px;border-radius:12px;font-size:13px;margin-bottom:18px;
+  display:none;align-items:center;justify-content:space-between;gap:14px;
+}
+.error-banner.show{display:flex;}
+.error-banner button{
+  background:#f87171;color:#2a0d0d;border:none;padding:8px 16px;border-radius:8px;
+  font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;
+}
+
+/* Loading skeleton for score ring while first review pending */
+.loading-note{text-align:center;color:var(--text-2);font-size:12.5px;font-family:var(--mono);margin-top:14px;}
+
+footer.app-footer{text-align:center;padding:40px 24px;color:var(--text-2);font-size:11.5px;font-family:var(--mono);border-top:1px solid var(--line-soft);margin-top:40px;}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-mark">CI</div>
+      <div class="brand-text">
+        <h1>Content Intelligence Studio</h1>
+        <span>AI CONTENT CONSULTANT · LIVE CLAUDE REVIEW</span>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Idle</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ============ INTAKE ============ -->
+  <section class="hero" id="intakeSection">
+    <div class="eyebrow">● Resume · ATS Job Portals · Balanced Review</div>
+    <h2>Get an ATS-grade, keyword-precise resume audit — powered live by Claude.</h2>
+    <p>Paste your resume text, upload a screenshot, or both. Every score, insight, and rewrite below is generated live by Claude — nothing is hardcoded.</p>
+
+    <div class="brief-strip">
+      <div class="chip">Content: <b>Resume</b></div>
+      <div class="chip">Platform: <b>ATS Job Portals</b></div>
+      <div class="chip">Goal: <b>Pass ATS filters / keyword match</b></div>
+      <div class="chip">Tone: <b>Balanced &amp; professional</b></div>
+    </div>
+
+    <div class="panel panel-pad intake-grid" style="margin-top:22px;">
+      <div>
+        <div class="field-label">Resume text <span class="req">*</span></div>
+        <textarea id="resumeText" placeholder="Paste your full resume text here...
+
+e.g.
+AANCHAL [Your Name]
+B.Tech CSE · Dr. K.N. Modi Institute of Engineering & Technology
+Email · Phone · LinkedIn
+
+EXPERIENCE
+Prompt Engineering Intern — UptoSkills (Apr–Jul 2026)
+- ...
+
+SKILLS
+HTML, CSS, JavaScript, Java, Python, MySQL, PostgreSQL, JDBC, Git"></textarea>
+
+        <div style="margin-top:16px;">
+          <div class="field-label">Target job description <span style="color:var(--text-2);font-weight:400;">(optional, improves ATS keyword matching)</span></div>
+          <textarea id="jdTextArea" placeholder="Paste a target job description here for keyword-gap matching (optional)..."></textarea>
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">Upload screenshot <span style="color:var(--text-2);font-weight:400;">(optional — image of resume layout)</span></div>
+        <div class="upload-zone" id="uploadZone">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#f2b84b" stroke-width="1.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 9l5-5 5 5M12 4v13"/></svg>
+          <p>Click to upload or drag an image here</p>
+          <div class="small">PNG / JPG — resume screenshot, layout, or preview</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        <div class="preview-wrap" id="previewWrap">
+          <img id="previewImg" alt="Uploaded preview">
+          <button class="remove-img" id="removeImg">✕</button>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="field-label">Review intensity</div>
+          <div class="severity-row" id="severityRow">
+            <button class="sev-btn" data-sev="gentle">Gentle</button>
+            <button class="sev-btn active" data-sev="balanced">Balanced</button>
+            <button class="sev-btn" data-sev="brutal">Brutal</button>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <button class="btn-primary" id="runBtn">
+            <span id="runBtnText">▶ Run Full Analysis</span>
+          </button>
+          <button class="btn-ghost" id="sampleBtn">Load sample resume</button>
+        </div>
+        <div class="hint-err" id="inputErr">Please paste resume text or upload a screenshot before running analysis.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WORKFLOW ============ -->
+  <section class="workflow-section" id="workflowSection">
+    <div class="panel panel-pad">
+      <div class="panel-head">
+        <h3>Multi-Stage Review Workflow</h3>
+        <span class="sub" id="workflowSub">0 / 0 REVIEWERS COMPLETE</span>
+      </div>
+      <div class="workflow-grid">
+        <div class="reviewer-list" id="reviewerList"></div>
+        <div class="activity-log">
+          <div class="log-title">Live Activity Log</div>
+          <div id="logLines"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ERROR BANNER ============ -->
+  <div class="container" style="padding:0;">
+    <div class="error-banner" id="errorBanner">
+      <span id="errorText">Something went wrong contacting Claude.</span>
+      <button id="retryBtn">Retry</button>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="results-section" id="resultsSection">
+
+    <div class="panel score-hero">
+      <div class="score-ring-wrap">
+        <div class="score-ring">
+          <svg width="190" height="190" viewBox="0 0 190 190">
+            <circle class="bg" cx="95" cy="95" r="82" stroke-width="14" fill="none"/>
+            <circle class="fg" id="scoreCircle" cx="95" cy="95" r="82" stroke-width="14" fill="none" stroke-dasharray="515.2" stroke-dashoffset="515.2"/>
+          </svg>
+          <div class="score-num">
+            <div class="big" id="scoreBig">--</div>
+            <div class="lbl">ATS SCORE / 100</div>
+          </div>
+        </div>
+      </div>
+      <div class="score-verdict">
+        <h2 id="verdictTitle">Analyzing...</h2>
+        <p id="verdictText">Your content health verdict will appear here once Claude completes its review.</p>
+        <div class="tag-row" id="verdictTags"></div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="breakdown">Breakdown</button>
+      <button class="tab-btn" data-tab="swot">Strengths &amp; Gaps</button>
+      <button class="tab-btn" data-tab="rewrite">Rewrites</button>
+      <button class="tab-btn" data-tab="hooks">Titles &amp; Summary Lines</button>
+      <button class="tab-btn" data-tab="checklist">Publishing Checklist</button>
+      <button class="tab-btn" data-tab="report">Final Report</button>
+      <button class="tab-btn" data-tab="deeper">Go Deeper</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-breakdown">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Category Breakdown</h3><span class="sub">SCORED BY CLAUDE</span></div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-swot">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Strengths, Weaknesses &amp; Opportunities</h3><span class="sub">AI REASONING</span></div>
+        <div class="swot-grid">
+          <div class="swot-card strength"><h4>✓ Strengths</h4><ul id="listStrengths"></ul></div>
+          <div class="swot-card weakness"><h4>✕ Weaknesses</h4><ul id="listWeaknesses"></ul></div>
+          <div class="swot-card opportunity"><h4>◇ Missed Opportunities</h4><ul id="listOpportunities"></ul></div>
+          <div class="swot-card recommend"><h4>★ Platform Recommendations</h4><ul id="listRecommend"></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-rewrite">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Rewritten Sections</h3><span class="sub">BEFORE → AFTER</span></div>
+        <div class="before-after" style="margin-bottom:20px;">
+          <div class="ba-col"><h5>Before (excerpt)</h5><div class="box" id="beforeBox">—</div></div>
+          <div class="ba-col after"><h5>After (Claude rewrite)</h5><div class="box" id="afterBox">—</div></div>
+        </div>
+        <div id="rewriteBlocks"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-hooks">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Alternative Titles / Summary Lines</h3><span class="sub">CLICK TO COPY</span></div>
+        <div class="hooks-list" id="hooksList"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-checklist">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Publishing / Submission Checklist</h3><span class="sub">TRACK YOUR FIXES</span></div>
+        <div class="checklist" id="checklistList"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-report">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Executive Summary &amp; Content Health Report</h3><span class="sub">FINAL REPORT</span></div>
+        <div class="exec-summary" id="execSummary">—</div>
+        <div class="impact-grid" id="impactGrid"></div>
+        <div class="disclaimer" id="predictionDisclaimer"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-deeper">
+      <div class="panel panel-pad">
+        <div class="panel-head"><h3>Go Deeper</h3><span class="sub">SUGGESTED FOLLOW-UPS</span></div>
+        <div class="followup-grid" id="followupGrid"></div>
+        <div class="custom-ask">
+          <input type="text" id="customAskInput" placeholder="Ask Claude anything else about this resume...">
+          <button class="btn-primary" id="customAskBtn"><span>Ask</span></button>
+        </div>
+        <div id="customAskResult" style="margin-top:18px;"></div>
+      </div>
+    </div>
+
+    <div class="report-footer">
+      <button class="btn-ghost" id="reRunBtn">↻ Re-run analysis</button>
+      <button class="btn-ghost" id="printBtn">⤓ Print / Save report</button>
+      <button class="btn-primary" id="startOverBtn">Start a new analysis</button>
+    </div>
+  </section>
+
+</div>
+
+<footer class="app-footer">CONTENT INTELLIGENCE STUDIO · Powered by Claude · #ABTalksAIChallenge</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------------- STATE ---------------- */
+  const state = {
+    resumeText: '',
+    jdText: '',
+    imageBase64: null,
+    imageMediaType: null,
+    severity: 'balanced',
+    reviewers: [],
+    reviewOutputs: {}, // key -> raw text
+    checklistItems: []
+  };
+
+  const MODEL = 'claude-sonnet-4-6';
+
+  /* ---------------- DOM ---------------- */
+  const $ = (id) => document.getElementById(id);
+  const statusDot = $('statusDot'), statusText = $('statusText');
+  const resumeTextEl = $('resumeText'), jdTextArea = $('jdTextArea');
+  const uploadZone = $('uploadZone'), fileInput = $('fileInput');
+  const previewWrap = $('previewWrap'), previewImg = $('previewImg'), removeImgBtn = $('removeImg');
+  const severityRow = $('severityRow');
+  const runBtn = $('runBtn'), runBtnText = $('runBtnText'), sampleBtn = $('sampleBtn');
+  const inputErr = $('inputErr');
+  const intakeSection = $('intakeSection'), workflowSection = $('workflowSection'), resultsSection = $('resultsSection');
+  const reviewerListEl = $('reviewerList'), logLinesEl = $('logLines'), workflowSub = $('workflowSub');
+  const errorBanner = $('errorBanner'), errorText = $('errorText'), retryBtn = $('retryBtn');
+
+  /* ---------------- STATUS HELPERS ---------------- */
+  function setStatus(mode, text){
+    statusDot.className = 'dot' + (mode ? ' ' + mode : '');
+    statusText.textContent = text;
+  }
+
+  function log(msg, kind){
+    const line = document.createElement('div');
+    line.className = 'log-line ' + (kind || '');
+    const t = new Date().toLocaleTimeString('en-US', {hour12:false});
+    line.innerHTML = `<span class="t">[${t}]</span><span class="msg">${escapeHtml(msg)}</span>`;
+    logLinesEl.appendChild(line);
+    logLinesEl.parentElement.scrollTop = logLinesEl.parentElement.scrollHeight;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* ---------------- IMAGE UPLOAD ---------------- */
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault(); uploadZone.classList.remove('drag');
+    if(e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+  removeImgBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.imageBase64 = null; state.imageMediaType = null;
+    previewWrap.style.display = 'none'; fileInput.value = '';
+  });
+
+  function handleFile(file){
+    if(!file.type.startsWith('image/')){ alert('Please upload an image file (PNG/JPG).'); return; }
+    if(file.size > 8 * 1024 * 1024){ alert('Image too large — please use a file under 8MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      const base64 = result.split(',')[1];
+      state.imageBase64 = base64;
+      state.imageMediaType = file.type;
+      previewImg.src = result;
+      previewWrap.style.display = 'block';
+    };
+    reader.onerror = () => alert('Could not read that image. Please try another file.');
+    reader.readAsDataURL(file);
+  }
+
+  /* ---------------- SEVERITY ---------------- */
+  severityRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.sev-btn');
+    if(!btn) return;
+    [...severityRow.children].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.severity = btn.dataset.sev;
+  });
+
+  /* ---------------- SAMPLE ---------------- */
+  sampleBtn.addEventListener('click', () => {
+    resumeTextEl.value = `AANCHAL SHARMA
+B.Tech Computer Science Engineering | Dr. K.N. Modi Institute of Engineering and Technology
+Email: aanchal.sharma@email.com | Phone: +91-XXXXXXXXXX | LinkedIn: linkedin.com/in/aanchalsharma
+
+OBJECTIVE
+Looking for a challenging opportunity in frontend development where I can use my skills.
+
+EXPERIENCE
+Prompt Engineering Intern, UptoSkills — April 2026 to July 2026
+- Worked on database migration tasks
+- Helped debug backend issues
+- Used Git and GitHub for version control
+- Was part of Agile team meetings
+
+PROJECTS
+- Built a resume analyzer app
+- Made a to-do list website
+
+SKILLS
+HTML, CSS, JavaScript, Java, Python, MySQL, PostgreSQL, JDBC, Git
+
+EDUCATION
+B.Tech Computer Science Engineering, Dr. K.N. Modi Institute of Engineering and Technology, 2022-2026`;
+    jdTextArea.value = `Frontend Developer Intern
+We are looking for a Frontend Developer Intern skilled in React, JavaScript, HTML/CSS, responsive design, REST API integration, Git workflows, and component-based architecture. Experience with state management and UI/UX best practices is a plus.`;
+  });
+
+  /* ---------------- TABS ---------------- */
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if(!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-' + btn.dataset.tab).classList.add('active');
+  });
+
+  /* ---------------- CLAUDE API CALL ---------------- */
+  async function callClaude(systemPrompt, userContent, opts){
+    opts = opts || {};
+    const maxRetries = opts.maxRetries != null ? opts.maxRetries : 2;
+    let lastErr = null;
+    for(let attempt = 0; attempt <= maxRetries; attempt++){
+      try{
+        const body = {
+          model: MODEL,
+          max_tokens: opts.maxTokens || 1800,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userContent }]
+        };
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if(!res.ok){
+          const errBody = await res.text().catch(()=>'');
+          throw new Error('API error ' + res.status + ': ' + errBody.slice(0,200));
+        }
+        const data = await res.json();
+        const textParts = (data.content || []).filter(b => b.type === 'text').map(b => b.text);
+        const text = textParts.join('\n').trim();
+        if(!text) throw new Error('Empty response from Claude.');
+        return text;
+      }catch(err){
+        lastErr = err;
+        if(attempt < maxRetries){
+          await new Promise(r => setTimeout(r, 700 * (attempt+1)));
+          continue;
+        }
+      }
+    }
+    throw lastErr;
+  }
+
+  function buildUserContent(promptText){
+    const content = [];
+    if(state.imageBase64){
+      content.push({ type:'image', source:{ type:'base64', media_type: state.imageMediaType, data: state.imageBase64 } });
+    }
+    content.push({ type:'text', text: promptText });
+    return content;
+  }
+
+  /* ---------------- WORKFLOW DEFINITION ---------------- */
+  function severityInstruction(){
+    if(state.severity === 'gentle') return 'Be encouraging and gentle in tone, but still substantive and specific — do not soften facts, only soften delivery.';
+    if(state.severity === 'brutal') return 'Be brutally honest and direct. Do not soften criticism. Call out weak, generic, or unquantified content plainly.';
+    return 'Be balanced and professional — constructive, specific, and honest without being harsh.';
+  }
+
+  function reviewerDefinitions(){
+    const sev = severityInstruction();
+    const hasJD = state.jdText.trim().length > 0;
+    const hasImg = !!state.imageBase64;
+    const defs = [
+      {
+        key: 'ats',
+        name: 'ATS Compatibility Reviewer',
+        icon: '🧩',
+        desc: 'Parsing, formatting, keyword scanning',
+        system: `You are a senior Applicant Tracking System (ATS) compatibility specialist with 15 years of experience configuring and auditing ATS platforms used by recruiters on portals like Naukri, Indeed, LinkedIn, and corporate career sites. ${sev}
+Analyze the resume for ATS parseability: standard section headers, absence of tables/columns/graphics that break parsing, font/formatting risk, contact info placement, file structure signals, date formatting consistency, and use of standard job titles.
+Respond in clear plain text (NOT JSON, NOT markdown code fences). Structure your response with these exact labeled sections, each on its own line starting with the label followed by a colon:
+SCORE: <a single integer 0-100 for ATS compatibility>
+SUMMARY: <2-3 sentence summary>
+STRENGTHS: <3-5 bullet points, one per line, each starting with "- ">
+WEAKNESSES: <3-5 bullet points, one per line, each starting with "- ">
+FIXES: <3-5 concrete, actionable fixes, one per line, each starting with "- ">`
+      },
+      {
+        key: 'keyword',
+        name: 'Keyword & JD Match Reviewer',
+        icon: '🔑',
+        desc: hasJD ? 'Keyword gap analysis vs target JD' : 'Industry keyword coverage',
+        system: `You are an expert technical recruiter and keyword-optimization specialist for frontend/software engineering roles. ${sev}
+${hasJD ? 'A target job description has been provided — compare the resume against it directly and identify exact missing keywords, skills, and phrasing the ATS and recruiter would scan for.' : 'No job description was provided — evaluate keyword strength against typical Frontend Developer Intern / entry-level software roles (React, JavaScript, HTML/CSS, Git, APIs, responsive design).'}
+Respond in plain text (NOT JSON, NOT markdown code fences) with these exact labeled sections:
+SCORE: <integer 0-100 for keyword match strength>
+SUMMARY: <2-3 sentence summary>
+MISSING_KEYWORDS: <comma-separated list of specific missing keywords/skills, 5-12 items>
+STRONG_KEYWORDS: <comma-separated list of keywords already well-represented, 3-8 items>
+RECOMMENDATIONS: <3-5 bullet points, one per line, each starting with "- ">`
+      },
+      {
+        key: 'content',
+        name: 'Content & Impact Reviewer',
+        icon: '📈',
+        desc: 'Achievement framing, quantification, clarity',
+        system: `You are a resume writing coach specializing in achievement-oriented, quantified bullet points for early-career tech candidates. ${sev}
+Evaluate whether bullet points show impact (metrics, outcomes, scope) versus vague task descriptions, use of strong action verbs, conciseness, and whether the objective/summary is compelling or generic.
+Respond in plain text (NOT JSON, NOT markdown code fences) with these exact labeled sections:
+SCORE: <integer 0-100 for content impact quality>
+SUMMARY: <2-3 sentence summary>
+STRENGTHS: <3-5 bullet points, one per line, each starting with "- ">
+WEAKNESSES: <3-5 bullet points, one per line, each starting with "- ">
+OPPORTUNITIES: <3-5 specific missed opportunities to add impact/metrics, one per line, each starting with "- ">`
+      },
+      {
+        key: 'visual',
+        name: 'Visual Layout Reviewer',
+        icon: '🖼️',
+        desc: hasImg ? 'Direct visual analysis of uploaded screenshot' : 'Layout inference from text structure',
+        system: `You are a resume design and visual hierarchy expert. ${sev}
+${hasImg ? 'An image of the resume has been provided — analyze the ACTUAL visual layout you see: whitespace, alignment, font hierarchy, section separation, color use, density, and scannability. Describe specific things you observe in the image.' : 'No image was provided — infer likely layout/formatting risk purely from the text structure and spacing patterns given, and note this is a text-only inference.'}
+Respond in plain text (NOT JSON, NOT markdown code fences) with these exact labeled sections:
+SCORE: <integer 0-100 for visual/layout quality>
+SUMMARY: <2-3 sentence summary of what you observe>
+STRENGTHS: <2-4 bullet points, one per line, each starting with "- ">
+WEAKNESSES: <2-4 bullet points, one per line, each starting with "- ">`
+      }
+    ];
+    return defs;
+  }
+
+  /* ---------------- PARSE STRUCTURED TEXT ---------------- */
+  function parseSections(raw){
+    const result = {};
+    const lines = raw.split('\n');
+    let currentKey = null;
+    const knownLabels = ['SCORE','SUMMARY','STRENGTHS','WEAKNESSES','FIXES','MISSING_KEYWORDS','STRONG_KEYWORDS','RECOMMENDATIONS','OPPORTUNITIES'];
+    lines.forEach(line => {
+      const m = line.match(/^([A-Z_]+):\s?(.*)$/);
+      if(m && knownLabels.includes(m[1])){
+        currentKey = m[1];
+        result[currentKey] = (result[currentKey] || '') + m[2] + '\n';
+      } else if(currentKey){
+        result[currentKey] += line + '\n';
+      }
+    });
+    Object.keys(result).forEach(k => result[k] = result[k].trim());
+    return result;
+  }
+
+  function bulletsToArray(text){
+    if(!text) return [];
+    return text.split('\n').map(l => l.replace(/^[-•*]\s?/, '').trim()).filter(Boolean);
+  }
+
+  function extractScore(text){
+    const m = (text||'').match(/(\d{1,3})/);
+    if(!m) return 60;
+    return Math.max(0, Math.min(100, parseInt(m[1],10)));
+  }
+
+  /* ---------------- RUN WORKFLOW ---------------- */
+  runBtn.addEventListener('click', startAnalysis);
+  retryBtn.addEventListener('click', startAnalysis);
+
+  async function startAnalysis(){
+    state.resumeText = resumeTextEl.value.trim();
+    state.jdText = jdTextArea.value.trim();
+
+    if(!state.resumeText && !state.imageBase64){
+      inputErr.style.display = 'block';
+      return;
+    }
+    inputErr.style.display = 'none';
+    errorBanner.classList.remove('show');
+
+    runBtn.disabled = true;
+    runBtnText.textContent = 'Running…';
+    setStatus('busy', 'Analyzing');
+
+    intakeSection.style.display = 'none';
+    workflowSection.style.display = 'block';
+    resultsSection.style.display = 'none';
+    logLinesEl.innerHTML = '';
+    reviewerListEl.innerHTML = '';
+    state.reviewOutputs = {};
+
+    const defs = reviewerDefinitions();
+    state.reviewers = defs;
+    defs.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'reviewer-card';
+      card.id = 'rev-' + d.key;
+      card.innerHTML = `
+        <div class="r-icon">${d.icon}</div>
+        <div class="r-body">
+          <div class="name">${d.name}</div>
+          <div class="desc">${d.desc}</div>
+        </div>
+        <div class="r-state pending" id="state-${d.key}">Queued</div>
+      `;
+      reviewerListEl.appendChild(card);
+    });
+
+    log('Workflow initialized · ' + defs.length + ' specialist reviewers assigned', 'ok');
+    updateWorkflowSub(0, defs.length);
+
+    let completed = 0;
+    let hadError = false;
+
+    for(const def of defs){
+      const cardEl = $('rev-' + def.key);
+      const stateEl = $('state-' + def.key);
+      cardEl.classList.add('active');
+      stateEl.className = 'r-state active';
+      stateEl.innerHTML = '<span class="mini-spinner"></span>Reviewing';
+      log(`${def.name} started review...`, '');
+
+      const userPrompt = buildReviewerPrompt(def);
+      try{
+        const raw = await callClaude(def.system, buildUserContent(userPrompt), { maxTokens: 1400 });
+        state.reviewOutputs[def.key] = parseSections(raw);
+        state.reviewOutputs[def.key]._raw = raw;
+        cardEl.classList.remove('active'); cardEl.classList.add('done');
+        stateEl.className = 'r-state done'; stateEl.textContent = 'Complete';
+        completed++;
+        log(`${def.name} completed — score ${extractScore(state.reviewOutputs[def.key].SCORE)}/100`, 'ok');
+      }catch(err){
+        cardEl.classList.remove('active'); cardEl.classList.add('error');
+        stateEl.className = 'r-state error'; stateEl.textContent = 'Failed';
+        log(`${def.name} failed: ${err.message}`, 'err');
+        hadError = true;
+      }
+      updateWorkflowSub(completed, defs.length);
+    }
+
+    if(Object.keys(state.reviewOutputs).length === 0){
+      setStatus('err', 'Failed');
+      showError('All reviewers failed to reach Claude. Check your connection and retry.');
+      runBtn.disabled = false;
+      runBtnText.textContent = '▶ Run Full Analysis';
+      return;
+    }
+
+    log('Generating rewrites, hooks, and final report...', '');
+    stateEl_setSynth('Compiling report');
+
+    try{
+      await runSynthesisStage();
+      log('Final report compiled successfully.', 'ok');
+      setStatus('live', 'Complete');
+      renderResults();
+      workflowSection.style.display = 'none';
+      resultsSection.style.display = 'block';
+      window.scrollTo({top: resultsSection.offsetTop - 80, behavior:'smooth'});
+    }catch(err){
+      setStatus('err', 'Error');
+      showError('Report synthesis failed: ' + err.message);
+    }
+
+    runBtn.disabled = false;
+    runBtnText.textContent = '▶ Run Full Analysis';
+  }
+
+  function stateEl_setSynth(msg){
+    const el = document.createElement('div');
+    el.className = 'reviewer-card active';
+    el.innerHTML = `<div class="r-icon">🧠</div><div class="r-body"><div class="name">Chief Content Strategist</div><div class="desc">${msg}</div></div><div class="r-state active"><span class="mini-spinner"></span>Synthesizing</div>`;
+    el.id = 'rev-synth';
+    reviewerListEl.appendChild(el);
+  }
+
+  function updateWorkflowSub(done, total){
+    workflowSub.textContent = `${done} / ${total} REVIEWERS COMPLETE`;
+  }
+
+  function buildReviewerPrompt(def){
+    let p = `RESUME TEXT:\n${state.resumeText || '(No text provided — an image screenshot is attached instead. Analyze the resume directly from the image.)'}\n\n`;
+    if(state.jdText) p += `TARGET JOB DESCRIPTION:\n${state.jdText}\n\n`;
+    if(state.imageBase64) p += `An image of the resume is attached — use it as your primary visual source where relevant.\n\n`;
+    p += `Now produce your review following the exact labeled section format specified in your instructions. Do not include any preamble, markdown formatting, or JSON — plain labeled text only.`;
+    return p;
+  }
+
+  /* ---------------- SYNTHESIS STAGE (report, rewrites, hooks, checklist) ---------------- */
+  let synthData = {};
+
+  async function runSynthesisStage(){
+    const r = state.reviewOutputs;
+    const scores = Object.keys(r).map(k => extractScore(r[k].SCORE));
+    const avgScore = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length);
+
+    const contextSummary = Object.keys(r).map(k => {
+      const rev = state.reviewers.find(d=>d.key===k);
+      return `${rev ? rev.name : k}: score ${extractScore(r[k].SCORE)}/100. ${r[k].SUMMARY || ''}`;
+    }).join('\n');
+
+    const system = `You are the Chief Content Strategist synthesizing findings from a multi-specialist resume review panel into one final, decisive report for an entry-level frontend developer candidate targeting ATS job portals. Tone: balanced, professional, constructive but honest. Never use JSON or markdown code fences — plain labeled text only.`;
+
+    const userPrompt = `Here are the findings from ${scores.length} specialist reviewers (average score ${avgScore}/100):
+
+${contextSummary}
+
+FULL RESUME TEXT:
+${state.resumeText || '(image only, see attached)'}
+
+${state.jdText ? 'TARGET JOB DESCRIPTION:\n' + state.jdText + '\n' : ''}
+
+Produce a final synthesis report using EXACTLY these labeled plain-text sections (no markdown, no JSON, no code fences):
+
+OVERALL_SCORE: <single integer 0-100, your own holistic judgment, may differ slightly from the simple average>
+VERDICT_TITLE: <a short punchy 4-8 word verdict headline, e.g. "Solid Foundation, Needs Quantified Impact">
+VERDICT_TEXT: <2-3 sentence explanation of the verdict>
+TAGS: <comma-separated list of 3-5 short descriptive tags, e.g. "ATS-Risky, Under-quantified, Strong Skills Match">
+
+STRENGTHS: <5-7 consolidated bullet points across all reviewers, one per line starting with "- ">
+WEAKNESSES: <5-7 consolidated bullet points, one per line starting with "- ">
+OPPORTUNITIES: <4-6 missed opportunity bullet points, one per line starting with "- ">
+PLATFORM_RECOMMENDATIONS: <4-6 ATS-portal-specific recommendations, one per line starting with "- ">
+
+BEFORE_EXCERPT: <pick ONE weak bullet point or the objective/summary line verbatim from the original resume, under 40 words>
+AFTER_EXCERPT: <your rewritten, quantified, ATS-optimized version of that exact same line, under 45 words>
+
+REWRITE_1_LABEL: <short label for a second rewritten section, e.g. "Professional Summary">
+REWRITE_1_CONTENT: <the full rewritten section text>
+REWRITE_2_LABEL: <short label for a third rewritten section, e.g. "Experience Bullet Set">
+REWRITE_2_CONTENT: <the full rewritten section text, can include multiple lines>
+
+ALT_TITLES: <5 alternative professional summary/headline one-liners for the top of the resume, one per line, no numbering, no dashes>
+
+CHECKLIST: <8-10 concrete before-submission checklist items, one per line starting with "- ">
+
+EXEC_SUMMARY: <a well-written 5-7 sentence executive summary of overall content health, written in flowing prose, not bullets>
+
+IMPACT_1_LABEL: <short metric label, e.g. "Recruiter Skim Pass Rate">
+IMPACT_1_VALUE: <a short value/estimate, e.g. "62%">
+IMPACT_2_LABEL: <short metric label, e.g. "ATS Keyword Match">
+IMPACT_2_VALUE: <a short value/estimate>
+IMPACT_3_LABEL: <short metric label, e.g. "Est. Interview Callback Lift">
+IMPACT_3_VALUE: <a short value/estimate after applying fixes>
+
+FOLLOWUP_1: <a short follow-up question/prompt the user could ask next for deeper optimization>
+FOLLOWUP_2: <another follow-up prompt>
+FOLLOWUP_3: <another follow-up prompt>
+FOLLOWUP_4: <another follow-up prompt>`;
+
+    const raw = await callClaude(system, [{type:'text', text:userPrompt}], { maxTokens: 3000 });
+    synthData = parseSections(raw);
+    synthData._raw = raw;
+  }
+
+  /* ---------------- CUSTOM PARSE FOR SYNTH LABELS ---------------- */
+  function parseSynthLabel(raw, label){
+    const re = new RegExp(label + ':\\s*([\\s\\S]*?)(?=\\n[A-Z_]+\\d?:|$)');
+    const m = raw.match(re);
+    return m ? m[1].trim() : '';
+  }
+
+  /* ---------------- RENDER RESULTS ---------------- */
+  function renderResults(){
+    const raw = synthData._raw || '';
+    const overallScore = extractScore(parseSynthLabel(raw,'OVERALL_SCORE')) || 60;
+    const verdictTitle = parseSynthLabel(raw,'VERDICT_TITLE') || 'Analysis Complete';
+    const verdictText = parseSynthLabel(raw,'VERDICT_TEXT') || '';
+    const tags = (parseSynthLabel(raw,'TAGS') || '').split(',').map(s=>s.trim()).filter(Boolean);
+
+    // Score ring
+    const circumference = 2 * Math.PI * 82;
+    const offset = circumference - (overallScore/100)*circumference;
+    const circle = $('scoreCircle');
+    circle.setAttribute('stroke-dasharray', circumference);
+    setTimeout(()=>{ circle.style.strokeDashoffset = offset; }, 100);
+    circle.style.stroke = overallScore >= 75 ? 'var(--green)' : overallScore >= 50 ? 'var(--amber)' : 'var(--red)';
+    $('scoreBig').textContent = overallScore;
+    $('verdictTitle').textContent = verdictTitle;
+    $('verdictText').textContent = verdictText;
+    $('verdictTags').innerHTML = tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('');
+
+    // Category breakdown from individual reviewers
+    const catGrid = $('catGrid');
+    catGrid.innerHTML = '';
+    state.reviewers.forEach(def => {
+      const rv = state.reviewOutputs[def.key];
+      if(!rv) return;
+      const score = extractScore(rv.SCORE);
+      const note = rv.SUMMARY || '';
+      const card = document.createElement('div');
+      card.className = 'cat-card';
+      card.innerHTML = `
+        <div class="cat-top"><span class="cat-name">${def.icon} ${def.name.replace(' Reviewer','')}</span><span class="cat-score">${score}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="${score}%"></div></div>
+        <div class="cat-note">${escapeHtml(note)}</div>
+      `;
+      catGrid.appendChild(card);
+    });
+    setTimeout(()=>{
+      document.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w);
+    }, 150);
+
+    // SWOT — merge across reviewers + synth
+    const strengths = [].concat(
+      bulletsToArray(parseSynthLabel(raw,'STRENGTHS'))
+    );
+    const weaknesses = bulletsToArray(parseSynthLabel(raw,'WEAKNESSES'));
+    const opportunities = bulletsToArray(parseSynthLabel(raw,'OPPORTUNITIES'));
+    const recommendations = bulletsToArray(parseSynthLabel(raw,'PLATFORM_RECOMMENDATIONS'));
+
+    // include keyword reviewer's missing keywords as opportunities extra
+    if(state.reviewOutputs.keyword && state.reviewOutputs.keyword.MISSING_KEYWORDS){
+      const missing = state.reviewOutputs.keyword.MISSING_KEYWORDS.split(',').map(s=>s.trim()).filter(Boolean);
+      if(missing.length) opportunities.push('Missing keywords to add: ' + missing.join(', '));
+    }
+
+    fillList('listStrengths', strengths);
+    fillList('listWeaknesses', weaknesses);
+    fillList('listOpportunities', opportunities);
+    fillList('listRecommend', recommendations);
+
+    // Rewrites
+    $('beforeBox').textContent = parseSynthLabel(raw,'BEFORE_EXCERPT') || '—';
+    $('afterBox').textContent = parseSynthLabel(raw,'AFTER_EXCERPT') || '—';
+
+    const rewriteBlocks = $('rewriteBlocks');
+    rewriteBlocks.innerHTML = '';
+    for(let i=1;i<=2;i++){
+      const label = parseSynthLabel(raw, `REWRITE_${i}_LABEL`);
+      const content = parseSynthLabel(raw, `REWRITE_${i}_CONTENT`);
+      if(label && content){
+        const block = document.createElement('div');
+        block.className = 'rewrite-block';
+        block.innerHTML = `<h4>${escapeHtml(label)}</h4><div class="content">${escapeHtml(content)}</div>`;
+        rewriteBlocks.appendChild(block);
+      }
+    }
+
+    // Hooks / alt titles
+    const altTitles = (parseSynthLabel(raw,'ALT_TITLES') || '').split('\n').map(s=>s.trim()).filter(Boolean);
+    const hooksList = $('hooksList');
+    hooksList.innerHTML = '';
+    altTitles.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'hook-item';
+      item.innerHTML = `<span class="htext">${escapeHtml(t)}</span><button class="copy-btn">Copy</button>`;
+      item.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(t).then(()=>{
+          const btn = item.querySelector('.copy-btn');
+          btn.textContent = 'Copied!';
+          setTimeout(()=> btn.textContent = 'Copy', 1500);
+        });
+      });
+      hooksList.appendChild(item);
+    });
+
+    // Checklist
+    const checklistItems = bulletsToArray(parseSynthLabel(raw,'CHECKLIST'));
+    const checklistList = $('checklistList');
+    checklistList.innerHTML = '';
+    checklistItems.forEach((item,i) => {
+      const el = document.createElement('label');
+      el.className = 'check-item';
+      el.innerHTML = `<input type="checkbox" data-i="${i}"><span>${escapeHtml(item)}</span>`;
+      el.addEventListener('click', (e)=>{
+        if(e.target.tagName !== 'INPUT'){ return; }
+        el.classList.toggle('checked', e.target.checked);
+      });
+      checklistList.appendChild(el);
+    });
+
+    // Exec summary & impact
+    $('execSummary').textContent = parseSynthLabel(raw,'EXEC_SUMMARY') || '—';
+    const impactGrid = $('impactGrid');
+    impactGrid.innerHTML = '';
+    for(let i=1;i<=3;i++){
+      const lbl = parseSynthLabel(raw, `IMPACT_${i}_LABEL`);
+      const val = parseSynthLabel(raw, `IMPACT_${i}_VALUE`);
+      if(lbl && val){
+        const card = document.createElement('div');
+        card.className = 'impact-card';
+        card.innerHTML = `<div class="val">${escapeHtml(val)}</div><div class="lbl">${escapeHtml(lbl)}</div>`;
+        impactGrid.appendChild(card);
+      }
+    }
+    $('predictionDisclaimer').textContent = '⚠ All performance figures above are AI-generated estimates based on pattern reasoning, not verified statistical predictions. Use them directionally, not as guarantees.';
+
+    // Follow-ups
+    const followupGrid = $('followupGrid');
+    followupGrid.innerHTML = '';
+    for(let i=1;i<=4;i++){
+      const fq = parseSynthLabel(raw, `FOLLOWUP_${i}`);
+      if(fq){
+        const card = document.createElement('div');
+        card.className = 'followup-card';
+        card.innerHTML = `<div class="fq-tag">Ask Claude</div><div class="fq-text">${escapeHtml(fq)}</div>`;
+        card.addEventListener('click', () => runCustomAsk(fq));
+        followupGrid.appendChild(card);
+      }
+    }
+  }
+
+  function fillList(id, arr){
+    const el = $(id);
+    el.innerHTML = arr.length ? arr.map(x => `<li>${escapeHtml(x)}</li>`).join('') : '<li>No items returned.</li>';
+  }
+
+  function showError(msg){
+    errorText.textContent = msg;
+    errorBanner.classList.add('show');
+  }
+
+  /* ---------------- CUSTOM ASK ---------------- */
+  $('customAskBtn').addEventListener('click', () => {
+    const val = $('customAskInput').value.trim();
+    if(val) runCustomAsk(val);
+  });
+  $('customAskInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ const val = e.target.value.trim(); if(val) runCustomAsk(val); }
+  });
+
+  async function runCustomAsk(question){
+    const resultEl = $('customAskResult');
+    resultEl.innerHTML = `<div class="rewrite-block"><h4>Analyzing...</h4><div class="content" style="color:var(--text-2)">Claude is thinking through: "${escapeHtml(question)}"</div></div>`;
+    const system = `You are a senior resume strategist and ATS expert continuing a resume consultation. Respond in plain, well-formatted prose (short paragraphs and/or "- " bullet lines where useful). Do not use JSON or markdown code fences.`;
+    const userPrompt = `Original resume:\n${state.resumeText || '(image only)'}\n\n${state.jdText ? 'Target job description:\n'+state.jdText+'\n\n' : ''}Follow-up question: ${question}\n\nAnswer specifically and actionably.`;
+    try{
+      const answer = await callClaude(system, buildUserContent(userPrompt), { maxTokens: 900 });
+      resultEl.innerHTML = `<div class="rewrite-block"><h4>${escapeHtml(question)}</h4><div class="content">${escapeHtml(answer)}</div></div>`;
+    }catch(err){
+      resultEl.innerHTML = `<div class="rewrite-block"><h4>Error</h4><div class="content" style="color:var(--red)">Could not reach Claude: ${escapeHtml(err.message)}</div></div>`;
+    }
+  }
+
+  /* ---------------- FOOTER ACTIONS ---------------- */
+  $('reRunBtn').addEventListener('click', () => {
+    resultsSection.style.display = 'none';
+    startAnalysis();
+  });
+  $('printBtn').addEventListener('click', () => window.print());
+  $('startOverBtn').addEventListener('click', () => {
+    resultsSection.style.display = 'none';
+    intakeSection.style.display = 'block';
+    setStatus('', 'Idle');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  setStatus('', 'Idle');
+})();
+</script>
+</body>
+</html>
