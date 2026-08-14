@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React vs Vue vs Angular vs Svelte — Compare & Decide</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel2:#171b24; --border:#262b38;
+    --text:#e8eaf0; --muted:#8891a5; --accent:#6ea8fe; --accent2:#7ee0c3;
+    --warn:#f4b860; --danger:#ff6b6b;
+    --react:#61dafb; --vue:#42b883; --angular:#dd0031; --svelte:#ff3e00;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:linear-gradient(180deg,#0b0d12,#0d1017 40%,#0b0d12);color:var(--text);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;}
+  .mono{font-family:"IBM Plex Mono",monospace;}
+  header{padding:36px 20px 20px;text-align:center;max-width:900px;margin:0 auto;}
+  header h1{font-family:"Sora","Space Grotesk",sans-serif;font-size:clamp(24px,4vw,34px);margin:0 0 8px;
+    background:linear-gradient(90deg,var(--react),var(--vue) 40%,var(--svelte) 75%,var(--angular));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  header p{color:var(--muted);font-size:15px;margin:0;}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;}
+  main{max-width:1180px;margin:0 auto;padding:10px 20px 60px;}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:22px;}
+  .panel h2{font-family:"Space Grotesk",sans-serif;font-size:17px;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .panel h2 .tag{font-size:11px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);
+    padding:2px 8px;border-radius:20px;font-family:"IBM Plex Mono",monospace;}
+
+  /* weights */
+  .weights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;}
+  .weight-row label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--text);}
+  .weight-row .val{font-family:"IBM Plex Mono",monospace;color:var(--accent);}
+  input[type=range]{width:100%;accent-color:var(--accent);height:6px;}
+  .weight-desc{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .weight-total{margin-top:14px;font-size:12px;color:var(--muted);text-align:right;}
+  .reset-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-size:12px;
+    padding:6px 12px;border-radius:8px;cursor:pointer;margin-top:12px;}
+  .reset-btn:hover{border-color:var(--accent);}
+
+  /* ranking */
+  .rank-list{display:flex;flex-direction:column;gap:12px;}
+  .rank-item{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;
+    display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:14px;transition:transform .25s ease;}
+  .rank-pos{font-family:"IBM Plex Mono",monospace;font-size:20px;color:var(--muted);text-align:center;}
+  .rank-pos.first{color:var(--accent2);}
+  .rank-name{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .rank-bar-wrap{grid-column:1/-1;height:8px;background:#0b0d12;border-radius:6px;overflow:hidden;margin-top:2px;}
+  .rank-bar{height:100%;border-radius:6px;transition:width .35s ease;}
+  .rank-score{font-family:"IBM Plex Mono",monospace;color:var(--accent);font-size:14px;}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  td .score{font-family:"IBM Plex Mono",monospace;color:var(--accent2);font-weight:600;}
+  .estimate-flag{display:inline-block;margin-left:6px;font-size:10px;background:rgba(244,184,96,.15);
+    color:var(--warn);border:1px solid rgba(244,184,96,.4);padding:1px 6px;border-radius:20px;}
+  .cite{font-size:11px;color:var(--muted);}
+  .cite a{color:var(--accent);text-decoration:none;}
+  .cite a:hover{text-decoration:underline;}
+
+  /* sources panel */
+  .sources-list{display:flex;flex-direction:column;gap:10px;}
+  .source-item{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;}
+  .source-item .s-title{color:var(--text);font-weight:600;}
+  .source-item a{color:var(--accent);word-break:break-all;font-size:12px;}
+  .source-item .s-used{color:var(--muted);font-size:12px;margin-top:2px;}
+
+  /* collapsible */
+  details{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:22px;}
+  details summary{cursor:pointer;padding:18px 20px;font-family:"Space Grotesk",sans-serif;font-size:16px;
+    list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary .chev{transition:transform .2s;color:var(--muted);}
+  details[open] summary .chev{transform:rotate(90deg);}
+  .details-body{padding:0 20px 20px;color:#c6cad6;font-size:14px;}
+  .details-body h4{font-size:13px;color:var(--accent2);margin:14px 0 6px;}
+  .conflict-box{background:rgba(244,184,96,.08);border:1px solid rgba(244,184,96,.3);border-radius:10px;
+    padding:12px 14px;margin-top:10px;font-size:13px;}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-size:12.5px;color:var(--muted);}
+  .legend span{display:flex;align-items:center;gap:6px;}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:20px;}
+
+  #emptyState, #loadingState{display:none;text-align:center;padding:40px;color:var(--muted);}
+  #loadingState.show, #emptyState.show{display:block;}
+
+  @media(max-width:600px){
+    .rank-item{grid-template-columns:24px 1fr;}
+    .rank-score{grid-column:2;justify-self:start;}
+    table{font-size:12px;}
+    th,td{padding:8px 6px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>React vs Vue vs Angular vs Svelte</h1>
+  <p>Which frontend framework should a beginner learn first for job-readiness?</p>
+  <div class="sub">Built for #ABTalksAIChallenge · Data-driven, source-cited, weight-adjustable</div>
+</header>
+
+<main>
+
+  <div id="loadingState">Loading comparison engine…</div>
+  <div id="emptyState">No data available. Please refresh the page.</div>
+
+  <div id="appRoot">
+
+    <!-- WEIGHTS -->
+    <section class="panel">
+      <h2>⚖️ Set your priorities <span class="tag">drag to weight</span></h2>
+      <div class="weights-grid" id="weightsGrid"></div>
+      <div class="weight-total">Total weight: <span id="weightTotal" class="mono">100%</span> (auto-normalized)</div>
+      <button class="reset-btn" id="resetBtn">Reset to equal weights</button>
+    </section>
+
+    <!-- RANKING -->
+    <section class="panel">
+      <h2>🏆 Live ranking <span class="tag" id="rankTag">updates instantly</span></h2>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--react)"></i>React</span>
+        <span><i class="dot" style="background:var(--vue)"></i>Vue</span>
+        <span><i class="dot" style="background:var(--angular)"></i>Angular</span>
+        <span><i class="dot" style="background:var(--svelte)"></i>Svelte</span>
+      </div>
+      <div class="rank-list" id="rankList"></div>
+    </section>
+
+    <!-- DATA TABLE -->
+    <section class="panel">
+      <h2>📊 Raw comparison data</h2>
+      <div style="overflow-x:auto;">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Criterion</th>
+              <th>React</th>
+              <th>Vue</th>
+              <th>Angular</th>
+              <th>Svelte</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SOURCES -->
+    <section class="panel">
+      <h2>📚 Sources panel <span class="tag">every citation used</span></h2>
+      <div class="sources-list" id="sourcesList"></div>
+    </section>
+
+    <!-- HOW RESEARCHED -->
+    <details>
+      <summary>🔍 How this was researched <span class="chev">▶</span></summary>
+      <div class="details-body" id="researchBody"></div>
+    </details>
+
+  </div>
+</main>
+
+<footer>Built with Claude · Data current as of research date noted in each source · Not financial/career advice — verify before major decisions</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  const loading = document.getElementById('loadingState');
+  const empty = document.getElementById('emptyState');
+  const root = document.getElementById('appRoot');
+
+  loading.classList.add('show');
+  root.style.display = 'none';
+
+  const COLORS = { react:'#61dafb', vue:'#42b883', angular:'#dd0031', svelte:'#ff3e00' };
+  const NAMES  = { react:'React', vue:'Vue', angular:'Angular', svelte:'Svelte' };
+
+  // ---------- SOURCES ----------
+  const SOURCES = [
+    { id:'so2024', title:'Stack Overflow Developer Survey 2024', url:'https://survey.stackoverflow.co/2024', used:'Usage %, "admired" (satisfaction) rates for all four frameworks' },
+    { id:'sjs2024', title:'State of JS 2024 — Front-end Frameworks', url:'https://2024.stateofjs.com/en-US/libraries/front-end-frameworks/', used:'Retention/satisfaction trends, Svelte topping positive-opinion rankings' },
+    { id:'npmtrends', title:'npm trends — react vs vue vs angular vs svelte', url:'https://npmtrends.com/angular-vs-react-vs-svelte-vs-vue', used:'Live weekly npm download counts (ecosystem scale proxy for stability)' },
+    { id:'tutorac', title:'Tutorac — "React vs Angular 2026: Which to Learn for Jobs (India)"', url:'https://tutorac.com/blogs/reactjs-angular-node-js/react-vs-angular-2026/', used:'India-specific Naukri job-opening counts for React, Angular, Vue, Svelte (2026)' },
+    { id:'course4all', title:'Course4all — "React vs Vue vs Angular: India 2026 Hiring"', url:'https://course4all.com/blog/react-vue-angular-hiring/', used:'India frontend job-posting share % (Naukri, LinkedIn India, Instahyre, Q1 2026)' },
+    { id:'siutf', title:'shouldiusethisframework.com — "React\u2019s Bundle Size Problem in 2026"', url:'https://shouldiusethisframework.com/blog/react-bundle-size-problem', used:'Gzipped bundle size figures for typical React, Vue, Svelte production stacks' },
+    { id:'stacksfinder', title:'StacksFinder — BundlePhobia Svelte Comparison', url:'https://stacksfinder.com/guides/bundlephobia-svelte-comparison', used:'Svelte-vs-React/Vue bundle size ratio (15–22x smaller)' },
+    { id:'faircompare', title:'DEV Community — "Fair Benchmarking of Frontend Framework Bundle Sizes"', url:'https://dev.to/pavkode/fair-benchmarking-of-frontend-framework-bundle-sizes-isolating-framework-behavior-from-app-logic-3if2', used:'Confirms Vue\u2019s leaner runtime vs React/Angular overhead; Svelte scaling behavior' },
+    { id:'veroscale', title:'Vero Scale — "Choosing the Right JS Framework in 2026"', url:'https://veroscale.au/insights/astro-svelte-performance-benchmarks/', used:'Global market share %, corporate backing context (Meta, Google), Svelte growth trend' },
+    { id:'mergerocks', title:'merge.rocks — "Svelte vs React vs Vue in 2025"', url:'https://merge.rocks/blog/comparing-front-end-frameworks-for-startups-in-2025-svelte-vs-react-vs-vue', used:'Named production adopters of Svelte (NYT, IKEA, Spotify) as stability signal' },
+    { id:'medium25', title:'Medium — "React vs Vue vs Angular in 2025"', url:'https://mvineetsharma.medium.com/react-vs-vue-vs-angular-in-2025-which-framework-should-you-choose-e64a60b99505', used:'Qualitative learning-curve classification (Moderate / Easy / Steep)' }
+  ];
+
+  // ---------- CRITERIA & WEIGHTS ----------
+  const CRITERIA = [
+    { key:'learning', label:'Learning curve for beginners', desc:'Higher = faster to become productive', defaultWeight:25 },
+    { key:'jobs',      label:'Job market demand (India)',    desc:'Higher = more internship/entry-level openings', defaultWeight:25 },
+    { key:'stability', label:'Long-term stability / backing', desc:'Higher = stronger corporate backing & ecosystem durability', defaultWeight:25 },
+    { key:'perf',      label:'Performance (bundle size)',     desc:'Higher = smaller shipped JS, faster load', defaultWeight:25 }
+  ];
+
+  // ---------- SCORES (1-10, 10 = best) ----------
+  // Each score has: value, estimate(bool), note, citeIds
+  const DATA = {
+    react: {
+      learning:  { value:6, estimate:true,  note:'Moderate curve; ~4–6 weeks to production-readiness per India-focused hiring guides. Score is Claude\u2019s numeric translation of that qualitative range.', cites:['tutorac','medium25'] },
+      jobs:      { value:10, estimate:false, note:'~58,000 active Naukri India listings; ~76% of India frontend job postings in one Q1 2026 sample.', cites:['tutorac','course4all'] },
+      stability: { value:9,  estimate:false, note:'Backed by Meta; largest ecosystem and 30M+ weekly npm downloads; dominant Next.js/Vercel meta-framework layer.', cites:['veroscale','npmtrends'] },
+      perf:      { value:4,  estimate:true,  note:'Core library alone is small (~7–42KB reported depending on measurement), but typical production stack (React+DOM+Router+state) runs ~130–200KB gzipped — see "How this was researched" for the conflict.', cites:['siutf'] }
+    },
+    vue: {
+      learning:  { value:8, estimate:true,  note:'Widely classified as "Easy" — gentle learning curve, progressive adoption model (usable like plain HTML or scaled up).', cites:['medium25'] },
+      jobs:      { value:2, estimate:false, note:'~3,500 active Naukri India listings, concentrated in Asia-headquartered companies — smallest of the three mainstream frameworks in India.', cites:['tutorac'] },
+      stability: { value:6, estimate:false, note:'No single corporate steward (community/Evan You led), but heavy production use at Alibaba, Baidu, Xiaomi; ~14M weekly npm downloads.', cites:['veroscale','npmtrends'] },
+      perf:      { value:7, estimate:false, note:'Leaner runtime than React/Angular; typical production stack (Vue+Router+Pinia) reported around ~34KB gzipped.', cites:['siutf','faircompare'] }
+    },
+    angular: {
+      learning:  { value:3, estimate:true,  note:'Steep curve — ~8–12 weeks to productivity per India hiring guides; mandatory TypeScript, RxJS, and DI concepts up front.', cites:['tutorac','medium25'] },
+      jobs:      { value:5, estimate:false, note:'~19,000 active Naukri India listings, concentrated in BFSI/enterprise/GCC roles — real but roughly 3x smaller than React\u2019s India footprint.', cites:['tutorac'] },
+      stability: { value:9, estimate:false, note:'Backed directly by Google; entrenched in enterprise/BFSI stacks with long upgrade support cycles.', cites:['veroscale','npmtrends'] },
+      perf:      { value:3, estimate:true,  note:'No single authoritative gzip figure was found for a stock Angular app; independent benchmarks consistently show Angular\u2019s change-detection runtime adds more overhead than React or Vue at comparable scale. Flagged as directional, not an exact KB figure.', cites:['faircompare'] }
+    },
+    svelte: {
+      learning:  { value:8, estimate:true,  note:'Minimal boilerplate and a compiler-driven model make small apps fast to pick up; scored high, though smaller community means less tutorial/troubleshooting depth than React/Vue.', cites:['mergerocks','sjs2024'] },
+      jobs:      { value:1, estimate:false, note:'~600 active Naukri India listings — "loved by developers, hired-for rarely" in the India job market as of 2026.', cites:['tutorac'] },
+      stability: { value:5, estimate:false, note:'No single corporate steward like React/Angular, but adopted in production by The New York Times, IKEA, and Spotify for specific properties.', cites:['mergerocks'] },
+      perf:      { value:10, estimate:false, note:'Compiles away most runtime code; reported as roughly 15–22x smaller than equivalent React/Vue bundles, ~7KB gzipped in cited benchmarks.', cites:['stacksfinder','siutf'] }
+    }
+  };
+
+  function citeHtml(ids){
+    return ids.map(id=>{
+      const s = SOURCES.find(x=>x.id===id);
+      if(!s) return '';
+      return `<a href="${s.url}" target="_blank" rel="noopener">${s.title.split('—')[0].trim()}</a>`;
+    }).join(', ');
+  }
+
+  // ---------- RENDER WEIGHTS ----------
+  const weightsGrid = document.getElementById('weightsGrid');
+  const weightState = {};
+  CRITERIA.forEach(c => weightState[c.key] = c.defaultWeight);
+
+  function renderWeights(){
+    weightsGrid.innerHTML = '';
+    CRITERIA.forEach(c=>{
+      const row = document.createElement('div');
+      row.className = 'weight-row';
+      row.innerHTML = `
+        <label>${c.label} <span class="val" id="val-${c.key}">${weightState[c.key]}%</span></label>
+        <input type="range" min="0" max="100" value="${weightState[c.key]}" id="range-${c.key}">
+        <div class="weight-desc">${c.desc}</div>
+      `;
+      weightsGrid.appendChild(row);
+    });
+    CRITERIA.forEach(c=>{
+      document.getElementById(`range-${c.key}`).addEventListener('input', (e)=>{
+        weightState[c.key] = parseInt(e.target.value,10);
+        document.getElementById(`val-${c.key}`).textContent = weightState[c.key] + '%';
+        updateTotal();
+        renderRanking();
+      });
+    });
+    updateTotal();
+  }
+
+  function updateTotal(){
+    const total = CRITERIA.reduce((s,c)=>s+weightState[c.key],0);
+    document.getElementById('weightTotal').textContent = total + '% (normalized on calculation)';
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    CRITERIA.forEach(c=> weightState[c.key] = c.defaultWeight);
+    renderWeights();
+    renderRanking();
+  });
+
+  // ---------- RANKING ----------
+  function computeScores(){
+    const total = CRITERIA.reduce((s,c)=>s+weightState[c.key],0) || 1;
+    const results = Object.keys(DATA).map(fw=>{
+      let weighted = 0;
+      CRITERIA.forEach(c=>{
+        const w = weightState[c.key] / total;
+        weighted += DATA[fw][c.key].value * w;
+      });
+      return { fw, score: weighted };
+    });
+    results.sort((a,b)=> b.score - a.score);
+    return results;
+  }
+
+  function renderRanking(){
+    const list = document.getElementById('rankList');
+    const results = computeScores();
+    if(!results.length){
+      list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">No ranking available — adjust the sliders above.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    const maxScore = results[0].score || 1;
+    results.forEach((r, idx)=>{
+      const item = document.createElement('div');
+      item.className = 'rank-item';
+      const pct = Math.max(4, (r.score / 10) * 100);
+      item.innerHTML = `
+        <div class="rank-pos ${idx===0?'first':''}">${idx+1}</div>
+        <div class="rank-name"><i class="dot" style="background:${COLORS[r.fw]}"></i>${NAMES[r.fw]}</div>
+        <div class="rank-score">${r.score.toFixed(2)} / 10</div>
+        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${pct}%;background:${COLORS[r.fw]}"></div></div>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  // ---------- TABLE ----------
+  function renderTable(){
+    const body = document.getElementById('dataTableBody');
+    body.innerHTML = '';
+    CRITERIA.forEach(c=>{
+      const tr = document.createElement('tr');
+      let cells = `<td><strong>${c.label}</strong><div class="cite">${c.desc}</div></td>`;
+      Object.keys(DATA).forEach(fw=>{
+        const d = DATA[fw][c.key];
+        cells += `<td>
+          <span class="score">${d.value}/10</span>
+          ${d.estimate ? '<span class="estimate-flag">estimate</span>' : ''}
+          <div class="cite">${d.note}</div>
+          <div class="cite">Source: ${citeHtml(d.cites)}</div>
+        </td>`;
+      });
+      tr.innerHTML = cells;
+      body.appendChild(tr);
+    });
+  }
+
+  // ---------- SOURCES PANEL ----------
+  function renderSources(){
+    const list = document.getElementById('sourcesList');
+    list.innerHTML = '';
+    SOURCES.forEach(s=>{
+      const el = document.createElement('div');
+      el.className = 'source-item';
+      el.innerHTML = `
+        <div class="s-title">${s.title}</div>
+        <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+        <div class="s-used">Used for: ${s.used}</div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  // ---------- RESEARCH PANEL ----------
+  function renderResearch(){
+    const body = document.getElementById('researchBody');
+    body.innerHTML = `
+      <p>This tool targets a beginner developer deciding which framework to learn <em>first</em> for job-readiness — so criteria and weighting favor entry-level hiring reality over enterprise architecture concerns.</p>
+
+      <h4>Learning curve</h4>
+      <p>No single benchmark measures "time to productivity" precisely. Scores here are Claude's numeric translation of consistent qualitative classifications across sourced comparisons: Angular labelled "Steep" (~8–12 weeks), React "Moderate" (~4–6 weeks), and Vue/Svelte both described as "Easy" / low-boilerplate. These are flagged as estimates in the table because the 1–10 conversion involves judgment, even though the underlying qualitative claims are sourced.</p>
+
+      <h4>Job market demand</h4>
+      <p>India-specific Naukri listing counts (React ~58,000, Angular ~19,000, Vue ~3,500, Svelte ~600) came from one 2026 hiring-focused source; a second source independently put React at ~76% of India frontend postings, which is directionally consistent. These are treated as factual (not estimated) since they cite specific counts, though job-board totals fluctuate week to week and should be re-checked before a final decision.</p>
+
+      <h4>Stability / backing</h4>
+      <p>React (Meta) and Angular (Google) have unambiguous single corporate stewards, so those scores are high-confidence. Vue and Svelte lack that single-company backing; their scores instead reflect named production adopters (Alibaba/Baidu/Xiaomi for Vue; NYT/IKEA/Spotify for Svelte) and weekly npm download volume as durability proxies.</p>
+
+      <h4>Performance / bundle size</h4>
+      <div class="conflict-box">
+        <strong>Conflict found and resolved:</strong> Sources disagreed on React's bundle size — one benchmark reported React's <em>core library alone</em> at ~7–42KB minified+gzipped, while another measured a <em>typical production stack</em> (React + ReactDOM + Router + state management) at ~130–200KB gzipped. Both numbers are correct; they're measuring different things. This tool uses the production-stack framing since a beginner's first real app will include routing and state — so React and Angular score lower on performance than their bare-library numbers would suggest. No single authoritative gzip figure was found for a stock Angular app, so Angular's score (3/10) is directional, based on consistently-reported change-detection overhead rather than one exact measurement — flagged as an estimate in the table.</p>
+      </div>
+
+      <h4>What's NOT in this comparison</h4>
+      <p>Salary data, exact GitHub star counts, and non-India job markets were intentionally left out to keep this focused on the one decision it's built for. If you're optimizing for a non-India market or a specific company type, treat the job-demand column as illustrative rather than final.</p>
+    `;
+  }
+
+  // ---------- INIT ----------
+  function init(){
+    try{
+      renderWeights();
+      renderRanking();
+      renderTable();
+      renderSources();
+      renderResearch();
+      loading.classList.remove('show');
+      root.style.display = 'block';
+    }catch(err){
+      console.error('Init error:', err);
+      loading.classList.remove('show');
+      empty.classList.add('show');
+    }
+  }
+
+  setTimeout(init, 180); // brief simulated load for UX polish
+})();
+</script>
+</body>
+</html>
