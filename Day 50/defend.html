@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defend Your Experience</title>
+<style>
+:root{
+  --bg:#0a0c10; --bg2:#10131a; --panel:#151920; --panel2:#1b2029; --border:#272d38;
+  --text:#eceef2; --muted:#8992a3; --muted2:#5c6473;
+  --amber:#f2a154; --amber-dim:#3d2c17;
+  --red:#ff6b6b; --red-dim:#3a1e1e;
+  --green:#67d99a; --green-dim:#163326;
+  --blue:#6ea8fe;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --head:"Space Grotesk","Sora",sans-serif;
+  --radius:12px;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:radial-gradient(ellipse at top,#12151c,#0a0c10 55%);color:var(--text);
+  font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;}
+button,input,textarea,select{font-family:inherit;}
+::selection{background:var(--amber-dim);}
+h1,h2,h3,h4{font-family:var(--head);margin:0;}
+.mono{font-family:var(--mono);}
+
+/* ===== LAYOUT ===== */
+.appwrap{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand .mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--amber));
+  display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;color:#180a05;font-size:15px;}
+.brand h1{font-size:17px;}
+.brand .tag{font-size:11px;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;}
+.topbar-actions{display:flex;gap:8px;}
+
+.btn{border:1px solid var(--border);background:var(--panel);color:var(--text);padding:9px 15px;border-radius:9px;
+  font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.15s;}
+.btn:hover{border-color:var(--amber);}
+.btn.primary{background:linear-gradient(135deg,var(--red),var(--amber));border-color:transparent;color:#1a0d05;}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted);}
+.btn.ghost:hover{color:var(--text);background:var(--panel2);}
+.btn:disabled{opacity:.45;pointer-events:none;}
+.btn.small{padding:6px 11px;font-size:12px;}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;}
+
+/* ===== EXPLAINER ===== */
+.explainer{background:linear-gradient(135deg,var(--red-dim),var(--panel) 60%);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;position:relative;}
+.explainer h2{font-size:17px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.explainer p{font-size:13.5px;color:var(--muted);margin:0 0 8px;max-width:680px;}
+.explainer .steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.explainer .chip{font-size:11.5px;background:var(--panel2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;color:var(--muted);}
+.explainer .chip b{color:var(--text);}
+.explainer .close-x{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);font-size:16px;padding:4px 8px;border-radius:6px;}
+.explainer .close-x:hover{background:var(--panel2);color:var(--text);}
+
+/* ===== VIEWS ===== */
+.view{display:none;}
+.view.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== INTAKE ===== */
+.dropzone{border:1.5px dashed var(--border);border-radius:var(--radius);padding:26px;text-align:center;color:var(--muted);
+  font-size:13px;margin-bottom:14px;transition:.15s;cursor:pointer;}
+.dropzone.drag{border-color:var(--amber);background:var(--amber-dim);color:var(--text);}
+.dropzone input{display:none;}
+textarea#projectInput{width:100%;min-height:220px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:9px;color:var(--text);padding:14px;font-size:14px;resize:vertical;line-height:1.6;}
+.intake-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--muted);}
+.file-chip{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--border);
+  padding:6px 12px;border-radius:20px;font-size:12.5px;margin-bottom:10px;}
+.file-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;}
+
+/* ===== INTERVIEW ===== */
+.interview-layout{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start;}
+@media(max-width:800px){.interview-layout{grid-template-columns:1fr;}}
+
+.chat-thread{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;max-height:none;}
+.msg{max-width:100%;padding:14px 16px;border-radius:11px;font-size:14px;line-height:1.6;}
+.msg.interviewer{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--red);}
+.msg.interviewer .who{font-size:11px;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.msg.user{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);}
+.msg.user .who{font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.msg.assessment{background:transparent;border:1px dashed var(--border);font-size:12.5px;color:var(--muted);padding:10px 14px;}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;margin-right:6px;}
+.badge.strong{background:var(--green-dim);color:var(--green);}
+.badge.adequate{background:var(--amber-dim);color:var(--amber);}
+.badge.weak{background:var(--red-dim);color:var(--red);}
+
+.answer-box{display:flex;flex-direction:column;gap:8px;}
+.answer-box textarea{width:100%;min-height:100px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:9px;color:var(--text);padding:12px;font-size:14px;resize:vertical;}
+.answer-actions{display:flex;justify-content:space-between;align-items:center;}
+.hint{font-size:11.5px;color:var(--muted2);}
+
+.typing{display:flex;gap:5px;padding:14px 16px;}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--muted2);animation:blink 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+
+/* sidebar */
+.side-panel{position:sticky;top:20px;display:flex;flex-direction:column;gap:14px;}
+.progress-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:10px;}
+.claim-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
+.claim-row:last-child{border-bottom:none;}
+.claim-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.claim-dot.pending{background:var(--muted2);}
+.claim-dot.strong{background:var(--green);}
+.claim-dot.adequate{background:var(--amber);}
+.claim-dot.weak{background:var(--red);}
+.claim-text{color:var(--muted);}
+.claim-text.active{color:var(--text);font-weight:600;}
+
+.meter{height:6px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-top:8px;}
+.meter-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));transition:width .4s ease;}
+
+/* ===== REPORT ===== */
+.report-hero{text-align:center;padding:30px 20px;}
+.report-hero .score{font-family:var(--head);font-size:52px;font-weight:700;background:linear-gradient(135deg,var(--amber),var(--green));
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.report-hero p{color:var(--muted);font-size:13.5px;margin-top:6px;}
+
+.report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:16px;}
+.report-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.report-card .claim-title{font-weight:700;font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.report-card .rationale{font-size:12.5px;color:var(--muted);margin-bottom:8px;}
+.report-card .improve{font-size:12.5px;color:var(--text);background:var(--bg2);padding:8px 10px;border-radius:7px;border-left:2px solid var(--amber);}
+
+/* ===== HISTORY ===== */
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--panel2);
+  border:1px solid var(--border);border-radius:9px;margin-bottom:8px;font-size:13px;}
+.history-item .meta{color:var(--muted);font-size:11.5px;}
+
+/* ===== EMPTY / ERROR ===== */
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+.empty-state .big{font-size:32px;margin-bottom:10px;}
+.empty-state h4{font-family:var(--head);color:var(--text);margin-bottom:6px;}
+.error-banner{background:var(--red-dim);border:1px solid var(--red);color:var(--red);padding:12px 16px;border-radius:9px;
+  font-size:13px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);
+  padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:200;opacity:0;pointer-events:none;transition:.2s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+</style>
+</head>
+<body>
+
+<div class="appwrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">DX</div>
+      <div>
+        <h1>Defend Your Experience</h1>
+        <div class="tag">Technical deep-dive rehearsal</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn ghost small" id="historyBtn">Session history</button>
+      <button class="btn ghost small" id="helpBtn">What is this?</button>
+    </div>
+  </div>
+
+  <div class="explainer" id="explainer">
+    <button class="close-x" id="closeExplainer">✕</button>
+    <h2>🎯 What this does</h2>
+    <p>Paste in the description of one project. Claude reads it, pulls out every claim you'd have to back up in an
+    interview ("built a multi-agent orchestration loop," "targets an 85/100 quality threshold"), and then plays a
+    <strong>skeptical technical interviewer</strong> — asking follow-up questions that get harder and more specific
+    based on how you answer. It's not reviewing your project. It's stress-testing whether you can defend it out loud.</p>
+    <div class="steps">
+      <span class="chip"><b>1. Paste</b> your project description</span>
+      <span class="chip"><b>2. Interview</b> — answer follow-up questions live</span>
+      <span class="chip"><b>3. Defense Report</b> — see what's solid vs. shaky</span>
+    </div>
+  </div>
+
+  <div id="errorBanner" class="error-banner" style="display:none;">
+    <span id="errorText"></span>
+    <button class="btn small" id="retryBtn">Retry</button>
+  </div>
+
+  <!-- ================= INTAKE VIEW ================= -->
+  <div class="view active" id="view-intake">
+    <div class="panel">
+      <h3 style="margin-bottom:14px;">Describe the project you want to defend</h3>
+      <div class="dropzone" id="dropzone">
+        <div id="dropzoneText">Drag & drop a .md or .txt file here, or click to choose one — or just paste text below</div>
+        <input type="file" id="fileInput" accept=".txt,.md">
+      </div>
+      <div id="fileChipWrap"></div>
+      <textarea id="projectInput" placeholder="e.g. I built Autonomous Agent Studio — a multi-agent orchestration system with a Planner, Executor, Evaluator, Critic, Improver, Memory Manager, and Final Reviewer, targeting an 85/100 quality threshold before stopping..."></textarea>
+      <div class="intake-meta">
+        <span id="charCount">0 characters</span>
+        <span class="hint">The more specific the detail, the sharper the follow-up questions.</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn" id="loadSampleBtn">Load a sample project</button>
+      <button class="btn primary" id="startBtn">Begin the defense →</button>
+    </div>
+  </div>
+
+  <!-- ================= EXTRACTING VIEW ================= -->
+  <div class="view" id="view-extracting">
+    <div class="panel" style="text-align:center;padding:50px 20px;">
+      <div class="typing" style="justify-content:center;"><span></span><span></span><span></span></div>
+      <p style="color:var(--muted);margin-top:14px;font-size:13.5px;">Reading your project and identifying every claim that needs defending…</p>
+    </div>
+  </div>
+
+  <!-- ================= INTERVIEW VIEW ================= -->
+  <div class="view" id="view-interview">
+    <div class="interview-layout">
+      <div>
+        <div class="panel" id="chatPanel">
+          <div class="chat-thread" id="chatThread"></div>
+          <div id="typingIndicatorWrap" style="display:none;"><div class="msg interviewer"><div class="typing"><span></span><span></span><span></span></div></div></div>
+        </div>
+        <div class="panel answer-box" id="answerPanel">
+          <textarea id="answerInput" placeholder="Type your answer as you'd say it out loud in a real interview…"></textarea>
+          <div class="answer-actions">
+            <span class="hint">Answer like you're talking to a real interviewer, not writing documentation.</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn ghost small" id="endInterviewBtn">End & see report</button>
+              <button class="btn primary small" id="submitAnswerBtn">Submit answer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="side-panel">
+        <div class="panel progress-card">
+          <h4>Claims under review</h4>
+          <div id="claimsList"></div>
+          <div class="meter"><div class="meter-fill" id="progressMeter" style="width:0%;"></div></div>
+          <div class="hint" style="margin-top:6px;" id="progressLabel">0 of 0 claims probed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REPORT VIEW ================= -->
+  <div class="view" id="view-report">
+    <div class="panel report-hero">
+      <div class="score" id="reportScore">–</div>
+      <p>Overall defense strength across all claims probed</p>
+    </div>
+    <div class="panel">
+      <h3 style="margin-bottom:4px;">Defense Report</h3>
+      <p class="hint" style="margin-bottom:14px;">Claim-by-claim breakdown — well defended vs. needs work — with specific suggestions before your real interview.</p>
+      <div class="report-grid" id="reportGrid"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn" id="exportReportBtn">Export report</button>
+      <button class="btn primary" id="newSessionBtn">Defend another project</button>
+    </div>
+  </div>
+
+  <!-- ================= HISTORY VIEW ================= -->
+  <div class="view" id="view-history">
+    <div class="panel">
+      <h3 style="margin-bottom:14px;">Session history</h3>
+      <div id="historyList"></div>
+    </div>
+    <button class="btn" id="backFromHistoryBtn">← Back</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ STORAGE ============ */
+const LS_SESSIONS = "defend_experience_sessions_v1";
+const LS_EXPLAINER = "defend_experience_explainer_v1";
+function loadJSON(k, fb){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }catch(e){ return fb; } }
+function saveJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+let sessions = loadJSON(LS_SESSIONS, []);
+
+/* ============ STATE ============ */
+let state = {
+  projectText: "",
+  claims: [],       // {text, status:'pending'|'strong'|'adequate'|'weak', notes:''}
+  activeClaimIdx: -1,
+  transcript: [],   // {role:'interviewer'|'user', text}
+  apiHistory: [],   // messages for Claude API
+  turnCount: 0,
+  maxTurns: 8
+};
+
+/* ============ VIEW SWITCHING ============ */
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+}
+
+/* ============ TOAST / ERROR ============ */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+function showError(msg, retryFn){
+  const banner = document.getElementById('errorBanner');
+  document.getElementById('errorText').textContent = msg;
+  banner.style.display = 'flex';
+  const retryBtn = document.getElementById('retryBtn');
+  retryBtn.onclick = ()=>{ banner.style.display='none'; if(retryFn) retryFn(); };
+}
+function hideError(){ document.getElementById('errorBanner').style.display='none'; }
+
+/* ============ EXPLAINER ============ */
+if(loadJSON(LS_EXPLAINER, true)===false){ document.getElementById('explainer').style.display='none'; }
+document.getElementById('closeExplainer').addEventListener('click', ()=>{
+  document.getElementById('explainer').style.display='none'; saveJSON(LS_EXPLAINER, false);
+});
+document.getElementById('helpBtn').addEventListener('click', ()=>{
+  document.getElementById('explainer').style.display='block'; saveJSON(LS_EXPLAINER, true);
+  document.getElementById('explainer').scrollIntoView({behavior:'smooth'});
+});
+
+/* ============ INTAKE: FILE UPLOAD / DRAG-DROP ============ */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const projectInput = document.getElementById('projectInput');
+
+dropzone.addEventListener('click', ()=> fileInput.click());
+['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', e=>{
+  const file = e.dataTransfer.files[0];
+  if(file) handleFile(file);
+});
+fileInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(file) handleFile(file);
+});
+function handleFile(file){
+  if(!/\.(txt|md)$/i.test(file.name)){ toast('Please use a .txt or .md file'); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    projectInput.value = reader.result;
+    updateCharCount();
+    document.getElementById('fileChipWrap').innerHTML =
+      `<div class="file-chip">📄 ${file.name} <button id="clearFileBtn">✕</button></div>`;
+    document.getElementById('clearFileBtn').addEventListener('click', ()=>{
+      projectInput.value=''; updateCharCount(); document.getElementById('fileChipWrap').innerHTML='';
+    });
+  };
+  reader.readAsText(file);
+}
+function updateCharCount(){
+  document.getElementById('charCount').textContent = projectInput.value.length + ' characters';
+}
+projectInput.addEventListener('input', updateCharCount);
+
+document.getElementById('loadSampleBtn').addEventListener('click', ()=>{
+  projectInput.value = `I built Autonomous Agent Studio — a multi-agent orchestration system with seven roles: Planner, Executor, Evaluator, Critic, Improver, Memory Manager, and Final Reviewer. It runs a real loop (not a fixed script) that keeps iterating until a quality score hits an 85/100 threshold at runtime. Built as a single-file HTML app calling the Claude API directly via fetch, no backend. Part of my 60-day AI build challenge.`;
+  updateCharCount();
+});
+
+/* ============ START INTERVIEW ============ */
+document.getElementById('startBtn').addEventListener('click', beginDefense);
+
+async function beginDefense(){
+  const text = projectInput.value.trim();
+  if(text.length < 30){ toast('Add a bit more detail about the project first'); return; }
+  state.projectText = text;
+  hideError();
+  showView('extracting');
+  try{
+    const claims = await extractClaims(text);
+    if(!claims.length){ throw new Error("Could not identify distinct claims — try adding more specific detail."); }
+    state.claims = claims.map(c=>({text:c, status:'pending', notes:''}));
+    state.transcript = [];
+    state.apiHistory = [];
+    state.turnCount = 0;
+    renderClaimsList();
+    showView('interview');
+    await askNextQuestion(true);
+  }catch(err){
+    console.error(err);
+    showView('intake');
+    showError('Something went wrong reading your project: ' + err.message, beginDefense);
+  }
+}
+
+/* ============ CLAUDE API CALL ============ */
+async function callClaude(messages, system){
+  const body = { model:"claude-sonnet-4-6", max_tokens:1000, messages };
+  if(system) body.system = system;
+  let lastErr;
+  for(let attempt=0; attempt<2; attempt++){
+    try{
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)
+      });
+      if(res.status===429){ await new Promise(r=>setTimeout(r,1200)); lastErr=new Error("Rate limited, retrying…"); continue; }
+      if(!res.ok){ throw new Error("API returned status " + res.status); }
+      const data = await res.json();
+      const textBlocks = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text);
+      return textBlocks.join("\n").trim();
+    }catch(err){ lastErr = err; }
+  }
+  throw lastErr || new Error("Unknown API error");
+}
+
+/* ============ CLAIM EXTRACTION ============ */
+async function extractClaims(projectText){
+  const system = `You are a skeptical senior technical interviewer preparing to deep-dive on a candidate's project. Your job right now is only to extract claims — specific, checkable statements about what was built, how, and what it achieves — from the candidate's own description. A claim is something they would have to defend if pressed ("built a multi-agent loop with a runtime stopping condition", "calls the Claude API directly via fetch", "targets an 85/100 quality threshold"). Ignore vague marketing language that isn't a checkable claim.
+
+Output ONLY a plain numbered list, one claim per line, nothing else. Between 4 and 8 claims. No preamble, no headers, no explanation.`;
+  const text = await callClaude([{role:"user", content:`Project description:\n\n${projectText}`}], system);
+  const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
+  const claims = [];
+  lines.forEach(line=>{
+    const m = line.match(/^\d+[\.\)]\s*(.+)/);
+    if(m) claims.push(m[1].trim());
+  });
+  return claims.length ? claims : lines.slice(0,6);
+}
+
+/* ============ RENDER CLAIMS SIDEBAR ============ */
+function renderClaimsList(){
+  const wrap = document.getElementById('claimsList');
+  wrap.innerHTML = '';
+  state.claims.forEach((c, i)=>{
+    const row = document.createElement('div');
+    row.className = 'claim-row';
+    row.innerHTML = `<div class="claim-dot ${c.status}"></div><div class="claim-text ${i===state.activeClaimIdx?'active':''}">${c.text}</div>`;
+    wrap.appendChild(row);
+  });
+  const probed = state.claims.filter(c=>c.status!=='pending').length;
+  document.getElementById('progressMeter').style.width = (probed/state.claims.length*100) + '%';
+  document.getElementById('progressLabel').textContent = `${probed} of ${state.claims.length} claims probed`;
+}
+
+/* ============ CHAT RENDERING ============ */
+function appendMsg(role, text){
+  state.transcript.push({role, text});
+  const thread = document.getElementById('chatThread');
+  const el = document.createElement('div');
+  if(role==='interviewer'){
+    el.className = 'msg interviewer';
+    el.innerHTML = `<div class="who">Interviewer</div>${escapeHtml(text)}`;
+  } else if(role==='assessment'){
+    el.className = 'msg assessment';
+    el.innerHTML = text;
+  } else {
+    el.className = 'msg user';
+    el.innerHTML = `<div class="who">You</div>${escapeHtml(text)}`;
+  }
+  thread.appendChild(el);
+  document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
+  window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML.replace(/\n/g,'<br>'); }
+
+function setTyping(on){
+  document.getElementById('typingIndicatorWrap').style.display = on ? 'block' : 'none';
+}
+
+/* ============ INTERVIEW LOOP ============ */
+async function askNextQuestion(isFirst){
+  setTyping(true);
+  hideError();
+  const remaining = state.claims.filter(c=>c.status==='pending');
+  const system = `You are a rigorous, skeptical senior engineer conducting a technical deep-dive interview on the candidate's own project. You are not hostile, but you do not accept vague or generic answers — you probe for specifics: architecture decisions, edge cases, tradeoffs, what would break, why they chose one approach over another. Each question should build on the candidate's previous answer, getting more specific and harder over time rather than repeating the same angle. Ask exactly ONE question at a time, focused on ONE claim from the list. Never ask about a claim that already has an ASSESSMENT of "strong" unless there's new unresolved doubt.
+
+CLAIMS TO PROBE:
+${state.claims.map((c,i)=>`${i+1}. ${c.text} [status: ${c.status}]`).join("\n")}
+
+Respond in EXACTLY this format, nothing else:
+CLAIM_INDEX: <number of the claim this question targets, 1-indexed>
+QUESTION: <your one interview question, written as you'd say it out loud>`;
+
+  const userTurn = isFirst
+    ? `Project description:\n\n${state.projectText}\n\nBegin the interview with your first question.`
+    : `My previous answer: "${state.transcript[state.transcript.length-1].text}"\n\nContinue the interview.`;
+
+  state.apiHistory.push({role:"user", content:userTurn});
+  try{
+    const raw = await callClaude(state.apiHistory, system);
+    state.apiHistory.push({role:"assistant", content:raw});
+    const idxMatch = raw.match(/CLAIM_INDEX:\s*(\d+)/i);
+    const qMatch = raw.match(/QUESTION:\s*([\s\S]+)/i);
+    const claimIdx = idxMatch ? parseInt(idxMatch[1],10)-1 : (state.activeClaimIdx>=0?state.activeClaimIdx:0);
+    const question = qMatch ? qMatch[1].trim() : raw.trim();
+    state.activeClaimIdx = Math.max(0, Math.min(claimIdx, state.claims.length-1));
+    setTyping(false);
+    appendMsg('interviewer', question);
+    renderClaimsList();
+  }catch(err){
+    setTyping(false);
+    showError("The interviewer hit a snag reaching Claude (rate limit or connection issue). Your progress is saved — try again.", ()=>askNextQuestion(isFirst));
+  }
+}
+
+document.getElementById('submitAnswerBtn').addEventListener('click', submitAnswer);
+document.getElementById('answerInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && (e.metaKey||e.ctrlKey)) submitAnswer();
+});
+
+async function submitAnswer(){
+  const input = document.getElementById('answerInput');
+  const text = input.value.trim();
+  if(!text){ toast('Type an answer first'); return; }
+  appendMsg('user', text);
+  input.value = '';
+  state.turnCount++;
+
+  setTyping(true);
+  hideError();
+  const assessSystem = `You are the same skeptical technical interviewer. Assess ONLY the candidate's most recent answer against the claim it targets. Be honest — most first answers are "adequate" at best; reserve "strong" for answers with real specifics (numbers, concrete tradeoffs, named failure modes). Reserve "weak" for vague, generic, or evasive answers.
+
+Respond in EXACTLY this format, nothing else:
+STATUS: <strong|adequate|weak>
+NOTE: <one sentence on why, and if not strong, what specific detail would make it stronger>`;
+
+  try{
+    const raw = await callClaude([
+      {role:"user", content:`Claim being defended: "${state.claims[state.activeClaimIdx].text}"\n\nCandidate's answer: "${text}"`}
+    ], assessSystem);
+    const statusMatch = raw.match(/STATUS:\s*(strong|adequate|weak)/i);
+    const noteMatch = raw.match(/NOTE:\s*([\s\S]+)/i);
+    const status = statusMatch ? statusMatch[1].toLowerCase() : 'adequate';
+    const note = noteMatch ? noteMatch[1].trim() : '';
+    state.claims[state.activeClaimIdx].status = status;
+    state.claims[state.activeClaimIdx].notes = note;
+    setTyping(false);
+    appendMsg('assessment', `<span class="badge ${status}">${status}</span>${escapeHtml(note)}`);
+    renderClaimsList();
+
+    const allDone = state.claims.every(c=>c.status!=='pending' && c.status!=='weak') || state.turnCount>=state.maxTurns;
+    const stillPending = state.claims.some(c=>c.status==='pending');
+    if(state.turnCount >= state.maxTurns || !stillPending && state.claims.every(c=>c.status!=='pending')){
+      appendMsg('interviewer', "That's a good stopping point. Click \"End & see report\" when you're ready, or keep going if you want to strengthen a weak claim further.");
+    } else {
+      await askNextQuestion(false);
+    }
+  }catch(err){
+    setTyping(false);
+    showError("Couldn't reach Claude to assess that answer. Try again.", submitAnswer);
+  }
+}
+
+document.getElementById('endInterviewBtn').addEventListener('click', generateReport);
+
+/* ============ REPORT ============ */
+function generateReport(){
+  const scored = state.claims.filter(c=>c.status!=='pending');
+  const points = {strong:100, adequate:60, weak:20};
+  const avg = scored.length ? Math.round(scored.reduce((s,c)=>s+(points[c.status]||0),0)/scored.length) : 0;
+  document.getElementById('reportScore').textContent = scored.length ? avg + '/100' : '—';
+
+  const grid = document.getElementById('reportGrid');
+  grid.innerHTML = '';
+  if(!state.claims.length){
+    grid.innerHTML = `<div class="empty-state"><div class="big">📋</div><h4>No claims were probed</h4><p>Answer at least one question before generating a report.</p></div>`;
+  } else {
+    state.claims.forEach(c=>{
+      const el = document.createElement('div');
+      el.className = 'report-card';
+      const statusLabel = c.status==='pending' ? 'not yet probed' : c.status;
+      el.innerHTML = `
+        <div class="claim-title"><span class="badge ${c.status==='pending'?'adequate':c.status}">${statusLabel}</span></div>
+        <div class="rationale">${escapeHtml(c.text)}</div>
+        ${c.notes ? `<div class="improve">${escapeHtml(c.notes)}</div>` : `<div class="improve">Not covered in this session — rehearse this one before your interview.</div>`}
+      `;
+      grid.appendChild(el);
+    });
+  }
+
+  // save session
+  const session = {
+    id: 'sess_'+Date.now(),
+    date: new Date().toISOString(),
+    projectSnippet: state.projectText.slice(0,120),
+    claims: state.claims,
+    score: avg
+  };
+  sessions.unshift(session);
+  saveJSON(LS_SESSIONS, sessions);
+
+  showView('report');
+}
+
+document.getElementById('exportReportBtn').addEventListener('click', ()=>{
+  let out = `DEFENSE REPORT — ${new Date().toLocaleDateString()}\nOverall score: ${document.getElementById('reportScore').textContent}\n\n`;
+  state.claims.forEach((c,i)=>{
+    out += `${i+1}. [${c.status.toUpperCase()}] ${c.text}\n   ${c.notes || 'Not covered in this session.'}\n\n`;
+  });
+  const blob = new Blob([out], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'defense-report.txt'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Report exported');
+});
+
+document.getElementById('newSessionBtn').addEventListener('click', ()=>{
+  state = {projectText:"", claims:[], activeClaimIdx:-1, transcript:[], apiHistory:[], turnCount:0, maxTurns:8};
+  document.getElementById('chatThread').innerHTML = '';
+  document.getElementById('projectInput').value = '';
+  document.getElementById('fileChipWrap').innerHTML = '';
+  updateCharCount();
+  showView('intake');
+});
+
+/* ============ HISTORY ============ */
+document.getElementById('historyBtn').addEventListener('click', ()=>{
+  renderHistory();
+  showView('history');
+});
+document.getElementById('backFromHistoryBtn').addEventListener('click', ()=> showView('intake'));
+
+function renderHistory(){
+  const wrap = document.getElementById('historyList');
+  if(!sessions.length){
+    wrap.innerHTML = `<div class="empty-state"><div class="big">🗂</div><h4>No past sessions yet</h4><p>Once you finish a defense session, it'll be saved here so you can track improvement over time.</p></div>`;
+    return;
+  }
+  wrap.innerHTML = '';
+  sessions.forEach(s=>{
+    const el = document.createElement('div');
+    el.className = 'history-item';
+    el.innerHTML = `<div><div>${escapeHtml(s.projectSnippet)}…</div>
+      <div class="meta">${new Date(s.date).toLocaleString()} · ${s.claims.length} claims</div></div>
+      <div class="badge ${s.score>=80?'strong':s.score>=50?'adequate':'weak'}">${s.score}/100</div>`;
+    wrap.appendChild(el);
+  });
+}
+
+/* ============ INIT ============ */
+updateCharCount();
+showView('intake');
+
+})();
+</script>
+</body>
+</html>
