@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Readiness Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #0d0f12;
+    --bg-card: #161920;
+    --bg-card-hover: #1c2028;
+    --border: #2a2e37;
+    --border-strong: #3a3f4a;
+    --text-primary: #f0f1f3;
+    --text-secondary: #9ba1ad;
+    --text-muted: #6b7280;
+    --accent: #5ab4ff;
+    --accent-dark: #2b6fa8;
+    --red: #e2504a;
+    --amber: #f2a623;
+    --green: #4fae5f;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 { font-family: var(--font-heading); font-weight: 600; }
+
+  .app-shell { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* Explainer banner */
+  .banner {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .banner button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+  }
+  .banner.hidden { display: none; }
+
+  /* Tab nav */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+    overflow-x: auto;
+  }
+  .tab-nav.hidden { display: none; }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text-primary); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Views */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .view h2 { font-size: 22px; margin-bottom: 8px; }
+  .view p.desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+
+  textarea, input[type="text"], input[type="password"] {
+    width: 100%;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 12px;
+    resize: vertical;
+  }
+  textarea { min-height: 140px; }
+  textarea:focus, input:focus { outline: none; border-color: var(--accent); }
+
+  button.primary {
+    background: var(--accent);
+    color: #06121c;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 12px 20px;
+    cursor: pointer;
+    margin-top: 14px;
+  }
+  button.primary:hover { background: #78c3ff; }
+  button.primary:disabled { background: var(--border-strong); color: var(--text-muted); cursor: not-allowed; }
+
+  .placeholder-note {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* Score display placeholders */
+  .score-hero {
+    font-family: var(--font-mono);
+    font-size: 48px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .meter-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; font-size: 14px; }
+  .meter-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .meter-fill { height: 100%; background: var(--border-strong); width: 0%; }
+  .meter-label { width: 80px; color: var(--text-secondary); }
+  .meter-score { width: 32px; text-align: right; font-family: var(--font-mono); color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div class="banner" id="explainer-banner">
+    <span>This gives you an honest score, not a flattering one. Weak spots get named, not softened.</span>
+    <button id="dismiss-banner" aria-label="Dismiss">&times;</button>
+  </div>
+
+  <nav class="tab-nav hidden" id="tab-nav">
+    <button class="tab-btn" data-view="resume">Resume</button>
+    <button class="tab-btn" data-view="linkedin">LinkedIn</button>
+    <button class="tab-btn" data-view="interview">Interview</button>
+    <button class="tab-btn" data-view="dashboard">Dashboard</button>
+  </nav>
+
+  <!-- Landing / Explainer -->
+  <div class="view active" id="view-landing">
+    <div class="card">
+      <h1>Readiness Score</h1>
+      <p class="desc">An honest 0-100 read on how ready you are for internship applications. No sugar-coating.</p>
+      <button class="primary" onclick="showView('apikey')">Get started &rarr;</button>
+    </div>
+  </div>
+
+  <!-- API Key entry -->
+  <div class="view" id="view-apikey">
+    <div class="card">
+      <h2>Connect your Claude API key</h2>
+      <p class="desc">This app calls Claude directly from your browser. Your key is kept only in memory this session &mdash; never sent anywhere else.</p>
+      <input type="password" id="api-key-input" placeholder="sk-ant-...">
+      <button class="primary" id="apikey-continue">Continue &rarr;</button>
+      <div class="placeholder-note">Placeholder only today &mdash; key storage wired on Day 4, real Claude calls start Day 5.</div>
+    </div>
+  </div>
+
+  <!-- Resume module -->
+  <div class="view" id="view-resume">
+    <h2>Resume Scorer</h2>
+    <p class="desc">Paste your resume text below. We'll tell you what's actually working &mdash; and what isn't.</p>
+    <div class="card">
+      <textarea id="resume-input" placeholder="Paste your resume text here..."></textarea>
+      <button class="primary" id="resume-analyze" disabled>Analyze my resume</button>
+      <div class="placeholder-note">Dummy state only &mdash; real scoring buttons and Claude integration arrive Day 4/5.</div>
+    </div>
+  </div>
+
+  <!-- LinkedIn module -->
+  <div class="view" id="view-linkedin">
+    <h2>LinkedIn Scorer</h2>
+    <p class="desc">Paste your headline, About, Experience, and Skills. Missing experience entries get flagged, not ignored.</p>
+    <div class="card">
+      <textarea id="linkedin-input" placeholder="Paste your LinkedIn profile text here..."></textarea>
+      <button class="primary" id="linkedin-analyze" disabled>Analyze my profile</button>
+      <div class="placeholder-note">Dummy state only &mdash; real scoring wired Day 6.</div>
+    </div>
+  </div>
+
+  <!-- Interview module -->
+  <div class="view" id="view-interview">
+    <h2>Mock Interview</h2>
+    <p class="desc">Describe one project in a few sentences. Five follow-up questions test whether you can defend it.</p>
+    <div class="card">
+      <textarea id="interview-input" placeholder="Describe your project..."></textarea>
+      <button class="primary" id="interview-start" disabled>Start interview</button>
+      <div class="placeholder-note">Dummy state only &mdash; multi-turn Q&amp;A logic wired Day 7.</div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="view" id="view-dashboard">
+    <h2>Dashboard</h2>
+    <div class="card">
+      <p class="desc" style="text-align:center; margin-bottom: 4px;">No score yet. Complete at least one module to see where you stand.</p>
+      <div class="score-hero">&mdash;</div>
+      <div style="margin-top: 24px;">
+        <div class="meter-row"><span class="meter-label">Resume</span><div class="meter-track"><div class="meter-fill"></div></div><span class="meter-score">&mdash;</span></div>
+        <div class="meter-row"><span class="meter-label">LinkedIn</span><div class="meter-track"><div class="meter-fill"></div></div><span class="meter-score">&mdash;</span></div>
+        <div class="meter-row"><span class="meter-label">Interview</span><div class="meter-track"><div class="meter-fill"></div></div><span class="meter-score">&mdash;</span></div>
+      </div>
+      <div class="placeholder-note">Real unified score, history, and dummy-data testing buttons arrive Day 4.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---- View router ----
+  // Switches which .view div is visible. All views live in the DOM at once;
+  // only one has the "active" class (display:block) at a time.
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(function (el) {
+      el.classList.remove('active');
+    });
+    var target = document.getElementById('view-' + name);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.view === name);
+    });
+  }
+
+  // Tab nav clicks
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      showView(btn.dataset.view);
+    });
+  });
+
+  // API key screen: placeholder continue button reveals the tab nav
+  // (Day 4 will replace this with real state.apiKey persistence)
+  document.getElementById('apikey-continue').addEventListener('click', function () {
+    document.getElementById('tab-nav').classList.remove('hidden');
+    showView('resume');
+  });
+
+  // Explainer banner dismiss (persistence wired properly on Day 4;
+  // today this just hides it for the current page load as a placeholder)
+  document.getElementById('dismiss-banner').addEventListener('click', function () {
+    document.getElementById('explainer-banner').classList.add('hidden');
+  });
+
+  // Enable "Analyze"/"Start" buttons only once input has >= 30 characters,
+  // per the validation rule in API.md. Buttons are otherwise inert today --
+  // no click handlers yet, that's Day 5-7.
+  function wireMinLengthGate(inputId, buttonId, minLen) {
+    var input = document.getElementById(inputId);
+    var button = document.getElementById(buttonId);
+    input.addEventListener('input', function () {
+      button.disabled = input.value.trim().length < minLen;
+    });
+  }
+  wireMinLengthGate('resume-input', 'resume-analyze', 30);
+  wireMinLengthGate('linkedin-input', 'linkedin-analyze', 30);
+  wireMinLengthGate('interview-input', 'interview-start', 30);
+</script>
+
+</body>
+</html>
