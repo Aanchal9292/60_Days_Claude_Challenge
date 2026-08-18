@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Readiness Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d10;
+    --bg-elevated: #14171b;
+    --bg-card: #1a1e23;
+    --border: #262b31;
+    --text-primary: #e9edf1;
+    --text-secondary: #9aa4af;
+    --text-muted: #626b74;
+    --accent: #5eead4;
+    --accent-dim: #1a3d38;
+    --red: #f87171;
+    --amber: #fbbf24;
+    --green: #4ade80;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-elevated);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .brand {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-card);
+    padding: 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  .nav-btn {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .nav-btn:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-btn.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  /* Explainer banner */
+  .explainer-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--accent-dim);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+
+  .explainer-banner.hidden {
+    display: none;
+  }
+
+  .explainer-text strong {
+    color: var(--accent);
+  }
+
+  .banner-dismiss {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .banner-dismiss:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+
+  /* Main content */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .view {
+    display: none;
+  }
+
+  .view.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .view-header {
+    margin-bottom: 28px;
+  }
+
+  .view-title {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .view-desc {
+    color: var(--text-secondary);
+    font-size: 15px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  textarea.dummy-input {
+    width: 100%;
+    min-height: 140px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 14px;
+    resize: vertical;
+  }
+
+  textarea.dummy-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  textarea.dummy-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 20px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #04211c;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    opacity: 0.88;
+  }
+
+  .btn-row {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .dummy-result-card {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: var(--font-mono);
+  }
+
+  /* Dashboard */
+  .score-hero {
+    text-align: center;
+    padding: 32px 24px;
+  }
+
+  .score-hero-number {
+    font-family: var(--font-mono);
+    font-size: 64px;
+    font-weight: 600;
+    color: var(--text-muted);
+    line-height: 1;
+  }
+
+  .score-hero-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  .meter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .meter-label {
+    width: 90px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .meter-track {
+    flex: 1;
+    height: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .meter-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--text-muted);
+    border-radius: 4px;
+  }
+
+  .meter-value {
+    width: 32px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+
+  .empty-state-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+  }
+
+  .empty-state-title {
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-family: var(--font-body);
+  }
+
+  .empty-state-desc {
+    font-size: 13px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .history-placeholder {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  /* Dummy test buttons (Day 4 only — removed as real scoring lands) */
+  .btn-dummy {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .btn-dummy:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .btn-dummy-clear {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .btn-dummy-clear:hover {
+    color: var(--red);
+    border-color: var(--red);
+  }
+
+  /* Score color states */
+  .score-red { color: var(--red) !important; }
+  .score-amber { color: var(--amber) !important; }
+  .score-green { color: var(--green) !important; }
+  .fill-red { background: var(--red) !important; }
+  .fill-amber { background: var(--amber) !important; }
+  .fill-green { background: var(--green) !important; }
+
+  /* History rows */
+  .history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+
+  .history-row:first-child {
+    border-top: none;
+  }
+
+  .history-date {
+    color: var(--text-secondary);
+  }
+
+  .history-score {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .app-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+    nav {
+      justify-content: space-between;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 8px 6px;
+      font-size: 12.5px;
+      text-align: center;
+    }
+    .explainer-banner {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+    main {
+      padding: 24px 16px 60px;
+    }
+    .view-title {
+      font-size: 22px;
+    }
+    .score-hero-number {
+      font-size: 48px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand"><span class="brand-dot"></span>Readiness Score</div>
+    <nav>
+      <button class="nav-btn active" data-view="resume" onclick="showView('resume')">Resume</button>
+      <button class="nav-btn" data-view="linkedin" onclick="showView('linkedin')">LinkedIn</button>
+      <button class="nav-btn" data-view="interview" onclick="showView('interview')">Interview</button>
+      <button class="nav-btn" data-view="dashboard" onclick="showView('dashboard')">Dashboard</button>
+    </nav>
+  </header>
+
+  <div class="explainer-banner" id="explainerBanner">
+    <div class="explainer-text">
+      This gives you an honest 0–100 <strong>Readiness Score</strong> for internship applications — built from your resume, your LinkedIn, and a short mock interview. No sugarcoating, just what to fix first.
+    </div>
+    <button class="banner-dismiss" onclick="dismissBanner()" aria-label="Dismiss">✕</button>
+  </div>
+
+  <main>
+
+    <!-- RESUME VIEW -->
+    <section class="view active" id="view-resume">
+      <div class="view-header">
+        <div class="view-title">Resume Scorer</div>
+        <div class="view-desc">Paste your resume text below. You'll get a 0–100 score and specific, honest feedback — not generic praise.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Resume Text</div>
+        <textarea class="dummy-input" placeholder="Paste your resume content here (education, projects, experience, skills)..." disabled></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" disabled>Analyze My Resume</button>
+          <button class="btn btn-dummy" onclick="setDummyScore('resume', 72)">Set dummy score (72)</button>
+          <button class="btn btn-dummy-clear" onclick="clearDummyScore('resume')">Clear</button>
+        </div>
+        <div class="dummy-result-card" id="dummy-result-resume">
+          Placeholder — real scoring wires up on Day 5. Use the dummy button above to test data flow.
+        </div>
+      </div>
+    </section>
+
+    <!-- LINKEDIN VIEW -->
+    <section class="view" id="view-linkedin">
+      <div class="view-header">
+        <div class="view-title">LinkedIn Scorer</div>
+        <div class="view-desc">Paste your LinkedIn About, Experience, and Skills sections. We'll check if it's actually working for you, not just present.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">LinkedIn Profile Text</div>
+        <textarea class="dummy-input" placeholder="Paste your headline, About section, Experience entries, and Skills..." disabled></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" disabled>Analyze My Profile</button>
+          <button class="btn btn-dummy" onclick="setDummyScore('linkedin', 65)">Set dummy score (65)</button>
+          <button class="btn btn-dummy-clear" onclick="clearDummyScore('linkedin')">Clear</button>
+        </div>
+        <div class="dummy-result-card" id="dummy-result-linkedin">
+          Placeholder — real scoring wires up on Day 6. Use the dummy button above to test data flow.
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERVIEW VIEW -->
+    <section class="view" id="view-interview">
+      <div class="view-header">
+        <div class="view-title">Mock Interview</div>
+        <div class="view-desc">Describe one project. You'll get 4–5 follow-up questions testing how well you can defend it — then a score based on specificity, not impressiveness.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Project Description</div>
+        <textarea class="dummy-input" placeholder="Describe one project in detail: what it does, your role, the stack, and any hard decisions you made..." disabled></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" disabled>Start Interview</button>
+          <button class="btn btn-dummy" onclick="setDummyScore('interview', 58)">Set dummy score (58)</button>
+          <button class="btn btn-dummy-clear" onclick="clearDummyScore('interview')">Clear</button>
+        </div>
+        <div class="dummy-result-card" id="dummy-result-interview">
+          Placeholder — real interview flow wires up on Day 7. Use the dummy button above to test data flow.
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD VIEW -->
+    <section class="view" id="view-dashboard">
+      <div class="view-header">
+        <div class="view-title">Dashboard</div>
+        <div class="view-desc">Your unified Readiness Score, blended from all three modules.</div>
+      </div>
+
+      <div class="card">
+        <div class="score-hero">
+          <div class="score-hero-number" id="heroScore">—</div>
+          <div class="score-hero-label" id="heroLabel">Readiness Score — complete all 3 modules to see this</div>
+        </div>
+        <div>
+          <div class="meter-row">
+            <div class="meter-label">Resume</div>
+            <div class="meter-track"><div class="meter-fill" id="meterFill-resume"></div></div>
+            <div class="meter-value" id="meterValue-resume">–</div>
+          </div>
+          <div class="meter-row">
+            <div class="meter-label">LinkedIn</div>
+            <div class="meter-track"><div class="meter-fill" id="meterFill-linkedin"></div></div>
+            <div class="meter-value" id="meterValue-linkedin">–</div>
+          </div>
+          <div class="meter-row">
+            <div class="meter-label">Interview</div>
+            <div class="meter-track"><div class="meter-fill" id="meterFill-interview"></div></div>
+            <div class="meter-value" id="meterValue-interview">–</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="dashboardEmptyStateCard">
+        <div class="empty-state">
+          <div class="empty-state-icon">○</div>
+          <div class="empty-state-title" id="emptyStateTitle">No score yet</div>
+          <div class="empty-state-desc" id="emptyStateDesc">Complete the Resume, LinkedIn, and Interview modules to see your unified Readiness Score here.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Session History</div>
+        <div id="historyList">
+          <div class="history-placeholder" id="historyPlaceholder">
+            No sessions saved yet. History will appear here once you've completed a full session.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =====================================================
+    // VIEW SWITCHING
+    // =====================================================
+    function showView(name) {
+      document.querySelectorAll('.view').forEach(function(v) {
+        v.classList.remove('active');
+      });
+      document.getElementById('view-' + name).classList.add('active');
+
+      document.querySelectorAll('.nav-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      document.querySelector('.nav-btn[data-view="' + name + '"]').classList.add('active');
+
+      // Every time the Dashboard is opened, re-render it and
+      // check whether a new history entry should be saved.
+      if (name === 'dashboard') {
+        renderDashboard();
+        maybeSaveHistoryEntry();
+      }
+    }
+
+    // =====================================================
+    // EXPLAINER BANNER PERSISTENCE
+    // =====================================================
+    function dismissBanner() {
+      document.getElementById('explainerBanner').classList.add('hidden');
+      localStorage.setItem('readiness_score_banner_dismissed', 'true');
+    }
+
+    (function initBanner() {
+      var dismissed = localStorage.getItem('readiness_score_banner_dismissed');
+      if (dismissed === 'true') {
+        document.getElementById('explainerBanner').classList.add('hidden');
+      }
+    })();
+
+    // =====================================================
+    // DATA LAYER — single source of truth in localStorage
+    // =====================================================
+    var STATE_KEY = 'readiness_score_state_v1';
+    var MAX_HISTORY = 20;
+
+    function defaultState() {
+      return {
+        resume: { text: '', score: null, feedback: null },
+        linkedin: { text: '', score: null, feedback: null },
+        interview: { projectText: '', qa: [], score: null },
+        history: []
+      };
+    }
+
+    // Reads the full state object from localStorage.
+    // Returns a fresh default state if nothing is saved yet,
+    // or if the saved value is corrupted/unparseable.
+    function getState() {
+      var raw = localStorage.getItem(STATE_KEY);
+      if (!raw) return defaultState();
+      try {
+        var parsed = JSON.parse(raw);
+        // Guard against a partially-shaped object from an older version
+        var fresh = defaultState();
+        return Object.assign(fresh, parsed);
+      } catch (e) {
+        console.warn('Readiness Score: corrupted state, resetting.', e);
+        return defaultState();
+      }
+    }
+
+    // Merges `partial` into the current state (shallow top-level merge)
+    // and writes the result back to localStorage.
+    function setState(partial) {
+      var current = getState();
+      var next = Object.assign(current, partial);
+      localStorage.setItem(STATE_KEY, JSON.stringify(next));
+      return next;
+    }
+
+    // =====================================================
+    // DUMMY SCORE BUTTONS (Day 4 only — removed as real
+    // Claude scoring lands on Days 5–7)
+    // =====================================================
+    function setDummyScore(moduleName, score) {
+      var patch = {};
+      if (moduleName === 'interview') {
+        patch.interview = Object.assign({}, getState().interview, { score: score });
+      } else {
+        patch[moduleName] = Object.assign({}, getState()[moduleName], { score: score });
+      }
+      setState(patch);
+
+      var resultEl = document.getElementById('dummy-result-' + moduleName);
+      resultEl.textContent = 'Dummy score set: ' + score + '/100. Check the Dashboard to confirm it flows through.';
+
+      // Keep dashboard in sync if it happens to be visible already
+      renderDashboard();
+    }
+
+    function clearDummyScore(moduleName) {
+      var patch = {};
+      if (moduleName === 'interview') {
+        patch.interview = Object.assign({}, getState().interview, { score: null });
+      } else {
+        patch[moduleName] = Object.assign({}, getState()[moduleName], { score: null });
+      }
+      setState(patch);
+
+      var resultEl = document.getElementById('dummy-result-' + moduleName);
+      resultEl.textContent = 'Score cleared. Use the dummy button above to test data flow.';
+
+      renderDashboard();
+    }
+
+    // =====================================================
+    // DASHBOARD RENDERING
+    // =====================================================
+
+    // Returns 'red' | 'amber' | 'green' for a given 0-100 score.
+    function scoreColorClass(score) {
+      if (score < 50) return 'red';
+      if (score < 75) return 'amber';
+      return 'green';
+    }
+
+    function renderDashboard() {
+      var state = getState();
+      var modules = ['resume', 'linkedin', 'interview'];
+
+      // ---- Render each meter row ----
+      var validScores = [];
+      modules.forEach(function(mod) {
+        var score = state[mod].score;
+        var fillEl = document.getElementById('meterFill-' + mod);
+        var valueEl = document.getElementById('meterValue-' + mod);
+
+        if (typeof score === 'number') {
+          validScores.push(score);
+          fillEl.style.width = score + '%';
+          valueEl.textContent = score;
+
+          fillEl.classList.remove('fill-red', 'fill-amber', 'fill-green');
+          valueEl.classList.remove('score-red', 'score-amber', 'score-green');
+          var cls = scoreColorClass(score);
+          fillEl.classList.add('fill-' + cls);
+          valueEl.classList.add('score-' + cls);
+        } else {
+          fillEl.style.width = '0%';
+          valueEl.textContent = '–';
+          fillEl.classList.remove('fill-red', 'fill-amber', 'fill-green');
+          valueEl.classList.remove('score-red', 'score-amber', 'score-green');
+        }
+      });
+
+      // ---- Compute unified score (NaN-safe average of completed modules) ----
+      var heroScoreEl = document.getElementById('heroScore');
+      var heroLabelEl = document.getElementById('heroLabel');
+      var emptyCard = document.getElementById('dashboardEmptyStateCard');
+      var emptyTitle = document.getElementById('emptyStateTitle');
+      var emptyDesc = document.getElementById('emptyStateDesc');
+
+      heroScoreEl.classList.remove('score-red', 'score-amber', 'score-green');
+
+      if (validScores.length === 0) {
+        heroScoreEl.textContent = '—';
+        heroLabelEl.textContent = 'Readiness Score — complete all 3 modules to see this';
+        emptyCard.style.display = '';
+        emptyTitle.textContent = 'No score yet';
+        emptyDesc.textContent = 'Complete the Resume, LinkedIn, and Interview modules to see your unified Readiness Score here.';
+      } else {
+        var sum = validScores.reduce(function(a, b) { return a + b; }, 0);
+        var avg = Math.round(sum / validScores.length);
+        heroScoreEl.textContent = avg;
+        var cls = scoreColorClass(avg);
+        heroScoreEl.classList.add('score-' + cls);
+
+        if (validScores.length === modules.length) {
+          heroLabelEl.textContent = 'Readiness Score — based on all 3 modules';
+          emptyCard.style.display = 'none';
+        } else {
+          heroLabelEl.textContent = 'Partial Readiness Score — ' + validScores.length + ' of 3 modules completed';
+          emptyCard.style.display = '';
+          emptyTitle.textContent = 'This is a partial score';
+          var missing = modules.filter(function(mod) {
+            return typeof state[mod].score !== 'number';
+          });
+          var missingLabels = { resume: 'Resume', linkedin: 'LinkedIn', interview: 'Interview' };
+          var missingNames = missing.map(function(m) { return missingLabels[m]; }).join(' and ');
+          emptyDesc.textContent = 'Complete ' + missingNames + ' to see your full Readiness Score.';
+        }
+      }
+
+      renderHistory();
+    }
+
+    // =====================================================
+    // SESSION HISTORY
+    // =====================================================
+
+    // Called every time the Dashboard is viewed. If all 3 modules
+    // have a score, saves a new history entry — but only once per
+    // "complete state" (avoids duplicate entries from repeated visits
+    // with the exact same scores).
+    function maybeSaveHistoryEntry() {
+      var state = getState();
+      var scores = [state.resume.score, state.linkedin.score, state.interview.score];
+      var allComplete = scores.every(function(s) { return typeof s === 'number'; });
+      if (!allComplete) return;
+
+      var overallScore = Math.round((scores[0] + scores[1] + scores[2]) / 3);
+
+      var history = state.history || [];
+      var last = history[history.length - 1];
+
+      // Skip if the most recent entry already has identical scores
+      // (prevents duplicate entries from just re-opening the Dashboard)
+      if (last &&
+          last.overallScore === overallScore &&
+          last.resumeScore === scores[0] &&
+          last.linkedinScore === scores[1] &&
+          last.interviewScore === scores[2]) {
+        return;
+      }
+
+      var entry = {
+        date: new Date().toISOString(),
+        overallScore: overallScore,
+        resumeScore: scores[0],
+        linkedinScore: scores[1],
+        interviewScore: scores[2]
+      };
+
+      history.push(entry);
+      if (history.length > MAX_HISTORY) {
+        history = history.slice(history.length - MAX_HISTORY);
+      }
+
+      setState({ history: history });
+    }
+
+    function formatHistoryDate(isoString) {
+      var d = new Date(isoString);
+      var options = { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return d.toLocaleDateString('en-US', options);
+    }
+
+    function renderHistory() {
+      var state = getState();
+      var listEl = document.getElementById('historyList');
+      var history = state.history || [];
+
+      if (history.length === 0) {
+        listEl.innerHTML = '<div class="history-placeholder" id="historyPlaceholder">No sessions saved yet. History will appear here once you\'ve completed a full session.</div>';
+        return;
+      }
+
+      // Most recent first
+      var ordered = history.slice().reverse();
+      var html = ordered.map(function(entry) {
+        var cls = scoreColorClass(entry.overallScore);
+        return '<div class="history-row">' +
+          '<span class="history-date">' + formatHistoryDate(entry.date) + '</span>' +
+          '<span class="history-score score-' + cls + '">' + entry.overallScore + '/100</span>' +
+          '</div>';
+      }).join('');
+
+      listEl.innerHTML = html;
+    }
+
+    // =====================================================
+    // INITIAL RENDER ON PAGE LOAD
+    // =====================================================
+    (function init() {
+      // Restore any previously-set dummy result text so the module
+      // views reflect saved state immediately on refresh.
+      var state = getState();
+      ['resume', 'linkedin', 'interview'].forEach(function(mod) {
+        var score = state[mod].score;
+        var resultEl = document.getElementById('dummy-result-' + mod);
+        if (typeof score === 'number') {
+          resultEl.textContent = 'Dummy score set: ' + score + '/100. Check the Dashboard to confirm it flows through.';
+        }
+      });
+
+      renderDashboard();
+    })();
+  </script>
+
+</body>
+</html>
